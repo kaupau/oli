@@ -20,32 +20,31 @@ export function Controls() {
   }
 
   return (
-    <div className="flex items-center gap-1.5 sm:gap-2">
+    <div className="flex items-center gap-1 sm:gap-2 text-[11px]">
       {/* Code toggle */}
       <button
         onClick={() => setIsAdvancedMode(!isAdvancedMode)}
-        className={`px-1.5 sm:px-2 py-1 text-[10px] sm:text-[11px] transition-all border flex items-center gap-1 sm:gap-1.5 ${
+        className={`px-1.5 py-0.5 transition-colors ${
           isAdvancedMode
-            ? 'border-[#f59e0b50] text-[#fbbf24] bg-[#f59e0b10]'
-            : 'border-[#333] text-[#555] hover:text-[#888] hover:border-[#444]'
+            ? 'text-[#fbbf24]'
+            : 'text-[#555] hover:text-[#888]'
         }`}
       >
-        <span className={isAdvancedMode ? 'text-[#fbbf24]' : 'text-[#444]'}>●</span>
-        <span className="hidden sm:inline">code</span>
+        --{isAdvancedMode ? 'code' : 'viz'}
       </button>
 
-      <span className="text-[#333] hidden sm:inline">│</span>
+      <span className="text-[#333]">|</span>
 
       {/* Play / Stop */}
       <button
         onClick={handlePlay}
-        className={`px-2 sm:px-3 py-1 text-[10px] sm:text-[11px] font-medium transition-all border ${
+        className={`px-1.5 py-0.5 transition-colors ${
           isPlaying
-            ? 'border-[#ef444450] text-[#f87171] bg-[#ef444410] hover:bg-[#ef444420]'
-            : 'border-[#22c55e50] text-[#4ade80] bg-[#22c55e10] hover:bg-[#22c55e20]'
+            ? 'text-[#f87171]'
+            : 'text-[#4ade80] hover:text-[#86efac]'
         }`}
       >
-        {isPlaying ? '■' : '▶'}<span className="hidden sm:inline"> {isPlaying ? 'stop' : 'play'}</span>
+        {isPlaying ? '^C kill' : './run'}
       </button>
     </div>
   )

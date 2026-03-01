@@ -15,31 +15,33 @@ function App() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-[#0a0a0a]">
-      {/* Header - Terminal style */}
-      <header className="h-10 bg-[#111] border-b border-[#333] flex items-center justify-between px-2 sm:px-3 shrink-0">
-        <div className="flex items-center gap-2 sm:gap-4">
-          {/* Logo */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <span className="text-[#a78bfa]">◉</span>
-            <span className="text-[12px] sm:text-[13px] font-semibold text-[#888]">oli</span>
-            <span className="text-[#333] hidden sm:inline">│</span>
-            <span className="text-[9px] sm:text-[10px] text-[#555] hidden sm:inline">strudel-live</span>
-          </div>
-          <div className="hidden sm:block">
+      {/* Header - Terminal title bar */}
+      <header className="bg-[#0a0a0a] border-b border-[#333] shrink-0">
+        <div className="flex items-center justify-between px-1 sm:px-2 py-1">
+          <div className="flex items-center gap-2 sm:gap-3 text-[11px]">
+            <span className="text-[#555]">┌──</span>
+            <span className="text-[#a78bfa]">[</span>
+            <span className="text-[#888]">oli</span>
+            <span className="text-[#a78bfa]">]</span>
+            <span className="text-[#333]">─</span>
+            <span className="text-[#555] hidden sm:inline">~/strudel</span>
             <Projects />
           </div>
+          <div className="flex items-center gap-2">
+            <Controls />
+            <span className="text-[#555] hidden sm:inline">──┐</span>
+          </div>
         </div>
-        <Controls />
       </header>
 
-      {/* Error - Terminal style */}
+      {/* Error - stderr style */}
       {error && (
-        <div className="bg-[#1a0a0a] border-b border-[#ef444440] text-[#f87171] px-3 sm:px-4 py-1.5 text-[10px] sm:text-[11px] flex items-center justify-between shrink-0">
+        <div className="bg-[#0a0a0a] border-b border-[#333] px-2 py-1 text-[11px] flex items-center justify-between shrink-0">
           <span className="truncate">
-            <span className="text-[#ef4444] mr-2">error:</span>
-            {error}
+            <span className="text-[#ef4444]">stderr:</span>
+            <span className="text-[#f87171] ml-2">{error}</span>
           </span>
-          <button onClick={() => setError(null)} className="text-[#666] hover:text-[#999] shrink-0 ml-2">[x]</button>
+          <button onClick={() => setError(null)} className="text-[#555] hover:text-[#f87171] shrink-0 ml-2">^C</button>
         </div>
       )}
 
@@ -73,34 +75,34 @@ function App() {
           )}
         </div>
 
-        {/* Mobile tab bar */}
-        <nav className="h-12 bg-[#111] border-t border-[#333] flex items-center justify-around shrink-0">
+        {/* Mobile tab bar - CLI style */}
+        <nav className="h-10 bg-[#0a0a0a] border-t border-[#333] flex items-center px-2 shrink-0 text-[11px]">
+          <span className="text-[#555]">$</span>
           <button
             onClick={() => setMobileTab('visualizer')}
-            className={`flex-1 h-full flex flex-col items-center justify-center gap-0.5 transition-colors ${
-              mobileTab === 'visualizer' ? 'text-[#a78bfa]' : 'text-[#555]'
+            className={`px-2 py-1 transition-colors ${
+              mobileTab === 'visualizer' ? 'text-[#4ade80]' : 'text-[#555] hover:text-[#888]'
             }`}
           >
-            <span className="text-lg">◎</span>
-            <span className="text-[9px]">play</span>
+            {mobileTab === 'visualizer' ? '>' : ' '}play
           </button>
+          <span className="text-[#333]">|</span>
           <button
             onClick={() => setMobileTab('ai')}
-            className={`flex-1 h-full flex flex-col items-center justify-center gap-0.5 transition-colors ${
-              mobileTab === 'ai' ? 'text-[#a78bfa]' : 'text-[#555]'
+            className={`px-2 py-1 transition-colors ${
+              mobileTab === 'ai' ? 'text-[#a78bfa]' : 'text-[#555] hover:text-[#888]'
             }`}
           >
-            <span className="text-lg">◐</span>
-            <span className="text-[9px]">ai</span>
+            {mobileTab === 'ai' ? '>' : ' '}ai
           </button>
+          <span className="text-[#333]">|</span>
           <button
             onClick={() => setMobileTab('sounds')}
-            className={`flex-1 h-full flex flex-col items-center justify-center gap-0.5 transition-colors ${
-              mobileTab === 'sounds' ? 'text-[#a78bfa]' : 'text-[#555]'
+            className={`px-2 py-1 transition-colors ${
+              mobileTab === 'sounds' ? 'text-[#fbbf24]' : 'text-[#555] hover:text-[#888]'
             }`}
           >
-            <span className="text-lg">♪</span>
-            <span className="text-[9px]">sounds</span>
+            {mobileTab === 'sounds' ? '>' : ' '}ls
           </button>
         </nav>
       </div>

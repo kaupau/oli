@@ -4,7 +4,7 @@ import { chat, type ChatMsg } from '../lib/api'
 import { initAudio, playPattern, stopPlayback } from '../lib/audio'
 
 export function AISidebar({ mobile = false }: { mobile?: boolean }) {
-  const { soundBanks, setCode, setIsPlaying, code } = useStore()
+  const { soundBanks, setCode, setIsPlaying, code, setError } = useStore()
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<ChatMsg[]>([])
   const [loading, setLoading] = useState(false)
@@ -77,7 +77,9 @@ export function AISidebar({ mobile = false }: { mobile?: boolean }) {
       stopPlayback()
       playPattern(extracted)
       setIsPlaying(true)
-    } catch { /* ignore */ }
+    } catch (e: any) {
+      setError(`Playback failed: ${e.message || 'Unknown error'}`)
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -191,7 +193,9 @@ export function AISidebar({ mobile = false }: { mobile?: boolean }) {
         <div className="px-3 py-1.5 border-t border-[#222] bg-[#0a0a0a]">
           <div className="text-[10px] text-[#444] truncate">
             <span className="text-[#525252]">current:</span>{' '}
-            <span className="text-[#666]">{code.split('\n')[0].slice(0, 40)}...</span>
+            <span className="text-[#666]">
+              {code.split('\n')[0].slice(0, 40)}{code.split('\n')[0].length > 40 || code.split('\n').length > 1 ? '...' : ''}
+            </span>
           </div>
         </div>
       )}

@@ -9,19 +9,32 @@ export function Visualizer() {
   const { isPlaying, isAdvancedMode } = useStore()
   const frameRef = useRef(0)
   const [cols, setCols] = useState(isMobile() ? 32 : 64)
-  const barsRef = useRef<number[]>(Array(64).fill(0))
-  const peaksRef = useRef<number[]>(Array(64).fill(0))
-  const peakHoldRef = useRef<number[]>(Array(64).fill(0))
+  const barsRef = useRef<number[]>([])
+  const peaksRef = useRef<number[]>([])
+  const peakHoldRef = useRef<number[]>([])
   const [ascii, setAscii] = useState('')
 
-  // Handle resize
+  // Handle resize and reset refs when cols change
   useEffect(() => {
     const handleResize = () => {
-      setCols(isMobile() ? 32 : 64)
+      const newCols = isMobile() ? 32 : 64
+      if (newCols !== cols) {
+        setCols(newCols)
+        // Reset refs for new column count
+        barsRef.current = Array(newCols).fill(0)
+        peaksRef.current = Array(newCols).fill(0)
+        peakHoldRef.current = Array(newCols).fill(0)
+      }
+    }
+    // Initialize refs on mount
+    if (barsRef.current.length !== cols) {
+      barsRef.current = Array(cols).fill(0)
+      peaksRef.current = Array(cols).fill(0)
+      peakHoldRef.current = Array(cols).fill(0)
     }
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [])
+  }, [cols])
 
   useEffect(() => {
     if (isAdvancedMode) return

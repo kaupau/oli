@@ -53,65 +53,70 @@ export function Projects() {
     <div className="relative" data-projects>
       <button
         onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen) }}
-        className="flex items-center gap-2 px-2 py-1 text-[11px] border border-[#333] hover:border-[#444] transition-colors"
+        className="flex items-center text-[11px] text-[#555] hover:text-[#888] transition-colors"
       >
-        <span className="text-[#555]">project:</span>
-        <span className="text-[#888] max-w-[100px] truncate">
-          {currentProject?.name || 'untitled'}
+        <span className="text-[#333]">(</span>
+        <span className="text-[#7dd3fc] max-w-[80px] sm:max-w-[120px] truncate">
+          {currentProject?.name || 'scratch'}
         </span>
-        <span className="text-[#444]">{isOpen ? '▲' : '▼'}</span>
+        <span className="text-[#333]">)</span>
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-64 bg-[#111] border border-[#333] z-50 overflow-hidden">
+        <div className="absolute top-full left-0 mt-1 w-56 bg-[#0a0a0a] border border-[#333] z-50 overflow-hidden text-[11px]">
           {/* Header */}
-          <div className="px-3 py-2 border-b border-[#333] bg-[#0c0c0c]">
-            <div className="text-[10px] text-[#555] mb-2">$ new project</div>
-            <div className="flex gap-1">
+          <div className="px-2 py-2 border-b border-[#333]">
+            <div className="flex items-center gap-1 text-[#555]">
+              <span>$</span>
+              <span className="text-[#4ade80]">touch</span>
               <input
                 type="text"
                 value={newProjectName}
                 onChange={(e) => setNewProjectName(e.target.value)}
-                placeholder="project-name"
-                className="flex-1 bg-[#0a0a0a] border border-[#333] px-2 py-1 text-[11px] outline-none focus:border-[#555] text-[#888]"
+                placeholder="name.oli"
+                className="flex-1 bg-transparent outline-none text-[#888] placeholder:text-[#444]"
                 onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
               />
               <button
                 onClick={handleCreateProject}
-                className="term-btn term-btn-primary text-[10px]"
+                className="text-[#555] hover:text-[#4ade80]"
               >
-                +
+                ⏎
               </button>
             </div>
           </div>
 
           {/* Project list */}
           <div className="max-h-48 overflow-auto">
+            <div className="px-2 py-1 text-[#555] border-b border-[#222]">
+              $ ls -la ~/projects/
+            </div>
             {projects.length === 0 ? (
-              <div className="p-3 text-center text-[#555] text-[11px]">
-                no projects found
+              <div className="px-2 py-2 text-[#444]">
+                (empty)
               </div>
             ) : (
               <div className="py-1">
-                {projects.map((project, index) => (
+                {projects.map((project) => (
                   <div
                     key={project.id}
                     onClick={() => handleLoadProject(project.id)}
-                    className={`px-3 py-1.5 flex items-center justify-between cursor-pointer text-[11px] group transition-colors ${
+                    className={`px-2 py-1 flex items-center justify-between cursor-pointer group transition-colors ${
                       currentProject?.id === project.id
-                        ? 'bg-[#1a1a1a] text-[#ccc]'
-                        : 'text-[#666] hover:bg-[#161616] hover:text-[#999]'
+                        ? 'text-[#4ade80] bg-[#111]'
+                        : 'text-[#666] hover:bg-[#111] hover:text-[#888]'
                     }`}
                   >
                     <div className="flex items-center gap-2 truncate">
-                      <span className="text-[#333]">{index === projects.length - 1 ? '└' : '├'}</span>
+                      <span className="text-[#555]">-rw-r--</span>
                       <span className="truncate">{project.name}</span>
                     </div>
                     <button
                       onClick={(e) => handleDeleteProject(project.id, e)}
-                      className="text-[#444] hover:text-[#f87171] opacity-0 group-hover:opacity-100 text-[10px] ml-2"
+                      className="text-[#444] hover:text-[#f87171] opacity-0 group-hover:opacity-100"
+                      title="rm"
                     >
-                      ×
+                      rm
                     </button>
                   </div>
                 ))}
