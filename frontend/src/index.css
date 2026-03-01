@@ -1,0 +1,170 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #0a0a0a;
+  color: #b4b4b4;
+  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  font-size: 12px;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Terminal scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #444;
+}
+
+::selection {
+  background: #3b3b3b;
+  color: #fff;
+}
+
+/* Terminal prompt styles */
+.prompt-user {
+  color: #7dd3fc;
+}
+
+.prompt-ai {
+  color: #a78bfa;
+}
+
+.prompt-success {
+  color: #4ade80;
+}
+
+.prompt-error {
+  color: #f87171;
+}
+
+.prompt-dim {
+  color: #525252;
+}
+
+/* ASCII box drawing */
+.ascii-box {
+  border: 1px solid #333;
+  background: #111;
+}
+
+.ascii-box-header {
+  border-bottom: 1px solid #333;
+  background: #161616;
+}
+
+/* Terminal input style */
+input, textarea {
+  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+}
+
+/* Blinking cursor effect */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.cursor-blink {
+  animation: blink 1s step-end infinite;
+}
+
+/* Terminal button style */
+.term-btn {
+  background: transparent;
+  border: 1px solid #333;
+  color: #888;
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.term-btn:hover {
+  border-color: #555;
+  color: #ccc;
+  background: #1a1a1a;
+}
+
+.term-btn-primary {
+  border-color: #7c3aed40;
+  color: #a78bfa;
+}
+
+.term-btn-primary:hover {
+  border-color: #7c3aed;
+  background: #7c3aed15;
+}
+
+.term-btn-danger {
+  border-color: #ef444440;
+  color: #f87171;
+}
+
+.term-btn-danger:hover {
+  border-color: #ef4444;
+  background: #ef444415;
+}
+
+.term-btn-success {
+  border-color: #22c55e40;
+  color: #4ade80;
+}
+
+.term-btn-success:hover {
+  border-color: #22c55e;
+  background: #22c55e15;
+}
+
+/* File tree styles */
+.file-tree-item {
+  color: #888;
+}
+
+.file-tree-item:hover {
+  color: #ddd;
+  background: #1a1a1a;
+}
+
+/* Code/pre styling */
+pre, code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+}
+
+/* Subtle scanlines effect (optional, subtle) */
+.scanlines::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.1) 0px,
+    rgba(0, 0, 0, 0.1) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  opacity: 0.3;
+}
