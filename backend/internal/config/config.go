@@ -10,7 +10,9 @@ type Config struct {
 	UploadDir    string
 	DBPath       string
 	StaticURL    string
+	StaticDir    string
 	AnthropicKey string
+	Password     string
 }
 
 func Load() *Config {
@@ -34,7 +36,9 @@ func Load() *Config {
 		UploadDir:    uploadDir,
 		DBPath:       dbPath,
 		StaticURL:    "/uploads",
+		StaticDir:    os.Getenv("STATIC_DIR"),
 		AnthropicKey: os.Getenv("ANTHROPIC_API_KEY"),
+		Password:     os.Getenv("APP_PASSWORD"),
 	}
 }
 

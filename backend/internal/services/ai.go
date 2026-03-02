@@ -236,6 +236,8 @@ func (s *Service) GetSystemPrompt(soundBanks []string) string {
 	banks, err := s.ListSoundBanks()
 	if err == nil && len(banks) > 0 {
 		prompt += "\n\n## YOUR SAMPLE LIBRARY\n"
+		prompt += "IMPORTANT: Use sample names EXACTLY as shown below - just the name, NO folder prefixes!\n"
+		prompt += "Example: sound(\"bd_ghost\") NOT sound(\"j/bd_ghost\") or sound(\"drums/bd_ghost\")\n\n"
 		prompt += "You can use these samples with sound() OR use synthesizers with note().s(\"sawtooth\") etc.\n\n"
 
 		// Group samples by role

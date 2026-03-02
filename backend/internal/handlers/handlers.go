@@ -1,7 +1,10 @@
 package handlers
 
 import (
+	"crypto/subtle"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -11,13 +14,44 @@ import (
 type Handler struct {
 	svc          *services.Service
 	anthropicKey string
+	staticDir    string
+	password     string
 }
 
 func New(svc *services.Service, anthropicKey string) *Handler {
 	return &Handler{svc: svc, anthropicKey: anthropicKey}
 }
 
+func (h *Handler) SetStaticDir(dir string) {
+	h.staticDir = dir
+}
+
+func (h *Handler) SetPassword(pw string) {
+	h.password = pw
+}
+
+func (h *Handler) basicAuth() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if h.password == "" {
+			c.Next()
+			return
+		}
+
+		_, password, hasAuth := c.Request.BasicAuth()
+		if !hasAuth || subtle.ConstantTimeCompare([]byte(password), []byte(h.password)) != 1 {
+			c.Header("WWW-Authenticate", `Basic realm="oli"`)
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+		c.Next()
+	}
+}
+
 func (h *Handler) RegisterRoutes(r *gin.Engine) {
+	// Add basic auth if password is set
+	if h.password != "" {
+		r.Use(h.basicAuth())
+	}
 	api := r.Group("/api")
 	{
 		api.GET("/soundbanks", h.ListSoundBanks)
@@ -38,6 +72,21 @@ func (h *Handler) RegisterRoutes(r *gin.Engine) {
 	}
 
 	r.Static("/uploads", h.svc.GetUploadDir())
+
+	// Serve frontend static files if staticDir is set
+	if h.staticDir != "" {
+		r.Static("/assets", filepath.Join(h.staticDir, "assets"))
+
+		// Serve index.html for SPA routing
+		r.NoRoute(func(c *gin.Context) {
+			indexPath := filepath.Join(h.staticDir, "index.html")
+			if _, err := os.Stat(indexPath); err == nil {
+				c.File(indexPath)
+			} else {
+				c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+			}
+		})
+	}
 }
 
 func (h *Handler) ListSoundBanks(c *gin.Context) {
