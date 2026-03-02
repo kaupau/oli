@@ -32,6 +32,7 @@ func (h *Handler) RegisterRoutes(r *gin.Engine) {
 		api.GET("/projects/:id", h.GetProject)
 		api.PUT("/projects/:id", h.UpdateProject)
 		api.DELETE("/projects/:id", h.DeleteProject)
+		api.POST("/projects/:id/duplicate", h.DuplicateProject)
 
 		api.POST("/chat", h.Chat)
 	}
@@ -230,4 +231,27 @@ func (h *Handler) DeleteProject(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
+}
+
+func (h *Handler) DuplicateProject(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+
+	// Get original project
+	original, err := h.svc.GetProject(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "project not found"})
+		return
+	}
+
+	// Create copy
+	copy, err := h.svc.CreateProject(original.Name+" copy", original.Code)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, copy)
 }

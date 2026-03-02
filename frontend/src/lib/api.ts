@@ -76,6 +76,20 @@ export async function deleteProject(id: number) {
   await fetch(`${API_BASE}/projects/${id}`, { method: 'DELETE' })
 }
 
+export async function duplicateProject(id: number) {
+  const res = await fetch(`${API_BASE}/projects/${id}/duplicate`, { method: 'POST' })
+  return res.json()
+}
+
+export async function renameProject(id: number, name: string) {
+  const res = await fetch(`${API_BASE}/projects/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  })
+  return res.json()
+}
+
 export interface ChatMsg {
   role: 'user' | 'assistant'
   content: string

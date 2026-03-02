@@ -25,6 +25,8 @@ export interface Project {
   updated_at: string
 }
 
+export type FocusPanel = 'sounds' | 'main' | 'ai'
+
 interface AppState {
   soundBanks: SoundBank[]
   projects: Project[]
@@ -34,6 +36,8 @@ interface AppState {
   isAIOpen: boolean
   code: string
   error: string | null
+  focusedPanel: FocusPanel
+  tempo: number
 
   setSoundBanks: (banks: SoundBank[]) => void
   setProjects: (projects: Project[]) => void
@@ -43,7 +47,12 @@ interface AppState {
   setIsAIOpen: (open: boolean) => void
   setCode: (code: string) => void
   setError: (error: string | null) => void
+  setFocusedPanel: (panel: FocusPanel) => void
+  cycleFocus: (direction: 'left' | 'right') => void
+  setTempo: (tempo: number) => void
 }
+
+const panelOrder: FocusPanel[] = ['sounds', 'main', 'ai']
 
 export const useStore = create<AppState>((set) => ({
   soundBanks: [],
@@ -54,6 +63,8 @@ export const useStore = create<AppState>((set) => ({
   isAIOpen: false,
   code: '// Welcome to oli\nsound("test_kick test_hihat test_kick test_hihat")\n',
   error: null,
+  focusedPanel: 'main',
+  tempo: 120,
 
   setSoundBanks: (soundBanks) => set({ soundBanks }),
   setProjects: (projects) => set({ projects }),
@@ -63,4 +74,13 @@ export const useStore = create<AppState>((set) => ({
   setIsAIOpen: (isAIOpen) => set({ isAIOpen }),
   setCode: (code) => set({ code }),
   setError: (error) => set({ error }),
+  setFocusedPanel: (focusedPanel) => set({ focusedPanel }),
+  cycleFocus: (direction) => set((state) => {
+    const idx = panelOrder.indexOf(state.focusedPanel)
+    const newIdx = direction === 'right'
+      ? (idx + 1) % panelOrder.length
+      : (idx - 1 + panelOrder.length) % panelOrder.length
+    return { focusedPanel: panelOrder[newIdx] }
+  }),
+  setTempo: (tempo) => set({ tempo }),
 }))

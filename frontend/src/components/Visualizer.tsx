@@ -6,7 +6,7 @@ import { getFrequencyData, getWaveformData } from '../lib/audio'
 const isMobile = () => window.innerWidth < 768
 
 export function Visualizer() {
-  const { isPlaying, isAdvancedMode } = useStore()
+  const { isPlaying, isAdvancedMode, tempo } = useStore()
   const frameRef = useRef(0)
   const [cols, setCols] = useState(isMobile() ? 32 : 64)
   const barsRef = useRef<number[]>([])
@@ -106,7 +106,7 @@ export function Visualizer() {
       // Header
       const statusIcon = isPlaying ? '▶' : '○'
       const statusText = isPlaying ? 'PLAY' : 'IDLE'
-      const bpmText = isPlaying ? '120' : ''
+      const bpmText = isPlaying ? String(tempo) : ''
       const headerPad = Math.max(0, cols - 4 - statusText.length - bpmText.length - (bpmText ? 3 : 0) - 2)
       lines.push(`  ┌${'─'.repeat(cols)}┐`)
       lines.push(`  │ oli${' '.repeat(headerPad)}${bpmText}${bpmText ? ' ' : ''}${statusIcon} ${statusText} │`)

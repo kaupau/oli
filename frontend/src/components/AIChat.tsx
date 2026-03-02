@@ -91,45 +91,41 @@ export function AISidebar({ mobile = false }: { mobile?: boolean }) {
 
   const suggestions = [
     'chill lo-fi beat',
-    'dark trap with 808s',
-    'ambient soundscape',
-    'add more drums',
+    'hard trap with 808s',
+    'house groove',
+    'add variation',
   ]
 
   return (
-    <div className={`bg-[#0c0c0c] flex flex-col ${mobile ? 'w-full h-full' : 'w-96 border-l border-[#333] shrink-0'}`}>
-      {/* Header - Terminal style */}
-      <div className="px-3 py-2 border-b border-[#333] flex items-center justify-between bg-[#111]">
-        <div className="flex items-center gap-2">
-          <span className="text-[#a78bfa]">◐</span>
-          <span className="text-[11px] text-[#888]">claude</span>
-          <span className="text-[#333]">│</span>
-          <span className="text-[10px] text-[#555]">strudel-assistant</span>
-        </div>
-        <button
-          onClick={() => setMessages([])}
-          className="text-[10px] text-[#555] hover:text-[#888] transition-colors"
-        >
-          [clear]
-        </button>
+    <div className={`bg-[#0a0a0a] flex flex-col text-[11px] ${mobile ? 'w-full h-full' : 'w-80 h-full border-l border-[#333] shrink-0'}`}>
+      {/* Header */}
+      <div className="px-3 py-2 border-b border-[#333] flex items-center justify-between">
+        <span className="text-[#a78bfa]">oli ai</span>
+        {messages.length > 0 && (
+          <button
+            onClick={() => setMessages([])}
+            className="text-[#444] hover:text-[#888] transition-colors"
+          >
+            clear
+          </button>
+        )}
       </div>
 
-      {/* Messages - CLI style */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-4">
+      {/* Messages */}
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto p-3 space-y-4">
         {messages.length === 0 ? (
           <div className="space-y-3">
-            <div className="text-[11px] text-[#555]">
-              <span className="text-[#4ade80]">$</span> describe music to generate strudel patterns
+            <div className="text-[#666]">
+              describe a beat and i'll generate it
             </div>
-            <div className="border border-[#222] bg-[#0a0a0a] p-2">
-              <div className="text-[10px] text-[#555] mb-2">suggestions:</div>
-              {suggestions.map((s, i) => (
+            <div className="space-y-1">
+              <div className="text-[#444] text-[10px] mb-1">try:</div>
+              {suggestions.map((s) => (
                 <button
                   key={s}
                   onClick={() => setInput(s)}
-                  className="block w-full text-left text-[11px] text-[#666] px-2 py-1 hover:bg-[#161616] hover:text-[#999] transition-colors"
+                  className="block w-full text-left text-[#555] hover:text-[#a78bfa] py-1 px-2 hover:bg-[#111] transition-colors rounded"
                 >
-                  <span className="text-[#525252] mr-2">{i + 1}.</span>
                   {s}
                 </button>
               ))}
@@ -140,31 +136,28 @@ export function AISidebar({ mobile = false }: { mobile?: boolean }) {
             {messages.map((msg, i) => (
               <div key={i}>
                 {msg.role === 'user' ? (
-                  <div className="flex gap-2">
-                    <span className="text-[#7dd3fc] shrink-0">&gt;</span>
-                    <span className="text-[11px] text-[#999]">{msg.content}</span>
+                  <div className="text-[#888]">
+                    <span className="text-[#7dd3fc]">you:</span>
+                    <span className="ml-2">{msg.content}</span>
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <span className="text-[#a78bfa] shrink-0">◐</span>
-                      <span className="text-[10px] text-[#555]">assistant</span>
-                    </div>
-                    <div className="ml-4 border border-[#222] bg-[#0a0a0a]">
-                      <pre className="p-3 text-[11px] text-[#888] whitespace-pre-wrap leading-relaxed overflow-x-auto">
+                    <div className="text-[#a78bfa]">oli:</div>
+                    <div className="pl-3 border-l-2 border-[#333]">
+                      <pre className="text-[#888] whitespace-pre-wrap leading-relaxed">
                         {formatResponse(msg.content)}
                       </pre>
                       {!msg.content.startsWith('Error:') && (
-                        <div className="flex gap-2 px-3 py-2 border-t border-[#222] bg-[#0c0c0c]">
+                        <div className="flex gap-2 mt-3">
                           <button
                             onClick={() => handleApply(msg.content)}
-                            className="term-btn text-[10px]"
+                            className="px-2 py-1 text-[#888] hover:text-[#fff] bg-[#1a1a1a] hover:bg-[#252525] transition-colors rounded"
                           >
-                            apply
+                            save
                           </button>
                           <button
                             onClick={() => handleApplyAndPlay(msg.content)}
-                            className="term-btn term-btn-success text-[10px]"
+                            className="px-2 py-1 text-[#4ade80] hover:text-[#86efac] bg-[#1a1a1a] hover:bg-[#252525] transition-colors rounded"
                           >
                             ▶ play
                           </button>
@@ -177,49 +170,46 @@ export function AISidebar({ mobile = false }: { mobile?: boolean }) {
             ))}
 
             {loading && (
-              <div className="flex gap-2 items-center">
-                <span className="text-[#a78bfa]">◐</span>
-                <span className="text-[11px] text-[#555]">
-                  generating<span className="cursor-blink">_</span>
-                </span>
+              <div>
+                <span className="text-[#a78bfa]">oli:</span>
+                <span className="ml-2 text-[#555] cursor-blink">_</span>
               </div>
             )}
           </div>
         )}
       </div>
 
-      {/* Context indicator */}
+      {/* Buffer indicator */}
       {code && messages.length > 0 && (
-        <div className="px-3 py-1.5 border-t border-[#222] bg-[#0a0a0a]">
-          <div className="text-[10px] text-[#444] truncate">
-            <span className="text-[#525252]">current:</span>{' '}
-            <span className="text-[#666]">
-              {code.split('\n')[0].slice(0, 40)}{code.split('\n')[0].length > 40 || code.split('\n').length > 1 ? '...' : ''}
-            </span>
-          </div>
+        <div className="px-3 py-1.5 border-t border-[#222] text-[#444] truncate">
+          {code.split('\n').length} lines loaded
         </div>
       )}
 
-      {/* Input - CLI style */}
-      <div className="p-3 border-t border-[#333] bg-[#111]">
-        <div className="flex gap-2 items-start">
-          <span className="text-[#7dd3fc] mt-1.5">&gt;</span>
+      {/* Input */}
+      <div className="border-t border-[#333] bg-[#111]">
+        <div className="flex items-end">
+          <span className="text-[#4ade80] pl-3 pb-2.5 select-none">›</span>
           <textarea
             ref={inputRef}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => {
+              setInput(e.target.value)
+              e.target.style.height = 'auto'
+              e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'
+            }}
             onKeyDown={handleKeyDown}
-            placeholder="describe music..."
+            placeholder="describe a beat..."
             rows={1}
-            className="flex-1 bg-transparent border-none outline-none text-[11px] text-[#999] placeholder:text-[#444] resize-none min-h-[20px] max-h-[80px]"
+            className="flex-1 bg-transparent px-2 py-2.5 outline-none text-[#ccc] placeholder:text-[#555] resize-none min-h-[40px] max-h-[120px] leading-relaxed"
             disabled={loading}
           />
           <button
             onClick={handleSend}
             disabled={loading || !input.trim()}
-            className="text-[#555] hover:text-[#888] disabled:text-[#333] disabled:cursor-not-allowed transition-colors text-xs"
+            className="px-3 pb-2.5 text-[#555] hover:text-[#4ade80] disabled:text-[#333] disabled:cursor-not-allowed transition-colors"
           >
-            [send]
+            ⏎
           </button>
         </div>
       </div>
@@ -235,7 +225,7 @@ function formatResponse(content: string): React.ReactNode {
     if (part.startsWith('```')) {
       const code = part.replace(/```(?:js|javascript|strudel)?\n?/, '').replace(/```$/, '')
       return (
-        <code key={i} className="block text-[#4ade80] bg-[#111] p-2 my-1 border-l-2 border-[#4ade80]">
+        <code key={i} className="block text-[#4ade80] bg-[#0a0a0a] p-2 my-2 border-l-2 border-[#4ade80] rounded-r">
           {code}
         </code>
       )
