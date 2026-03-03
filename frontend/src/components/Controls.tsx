@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useStore } from '../stores/app'
-import { initAudio, playPattern, stopPlayback, setTempo as setAudioTempo } from '../lib/audio'
+import { initAudio, pausePlayback, playPattern, resumePlayback, stopPlayback, setTempo as setAudioTempo } from '../lib/audio'
 
 function IconRewind({ size = 14 }: { size?: number }) {
   return (
@@ -40,16 +40,23 @@ export function Controls() {
   const { isPlaying, setIsPlaying, isAdvancedMode, setIsAdvancedMode, code, setError, tempo, setTempo } = useStore()
   const [editingTempo, setEditingTempo] = useState(false)
   const [tempoInput, setTempoInput] = useState(String(tempo))
+  const [isPaused, setIsPaused] = useState(false)
 
   const handlePlay = async () => {
     try {
       await initAudio()
       if (isPlaying) {
-        stopPlayback()
+        await pausePlayback()
         setIsPlaying(false)
+        setIsPaused(true)
       } else {
+        await resumePlayback()
         setAudioTempo(tempo)
-        playPattern(code)
+        if (isPaused) {
+          setIsPaused(false)
+        } else {
+          await playPattern(code)
+        }
         setIsPlaying(true)
       }
     } catch {
@@ -60,15 +67,18 @@ export function Controls() {
   const handleStop = async () => {
     stopPlayback()
     setIsPlaying(false)
+    setIsPaused(false)
   }
 
   const handleRestart = async () => {
     try {
       await initAudio()
+      await resumePlayback()
       stopPlayback()
       setAudioTempo(tempo)
-      playPattern(code)
+      await playPattern(code)
       setIsPlaying(true)
+      setIsPaused(false)
     } catch {
       setError('Failed to initialize audio')
     }

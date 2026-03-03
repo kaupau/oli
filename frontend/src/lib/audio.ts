@@ -234,6 +234,32 @@ export function stopPlayback() {
   }
 }
 
+export async function pausePlayback() {
+  if (!isInitialized) return
+
+  try {
+    const audioContext = getAudioContext()
+    if (audioContext.state === 'running') {
+      await audioContext.suspend()
+    }
+  } catch {
+    // Ignore
+  }
+}
+
+export async function resumePlayback() {
+  if (!isInitialized) return
+
+  try {
+    const audioContext = getAudioContext()
+    if (audioContext.state === 'suspended') {
+      await audioContext.resume()
+    }
+  } catch {
+    // Ignore
+  }
+}
+
 export function setTempo(bpm: number) {
   // Tempo is handled by setcpm() in the code
   console.log(`[audio] UI tempo: ${bpm} BPM`)
