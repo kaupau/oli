@@ -19,6 +19,12 @@ declare module '@strudel/mini' {
   export function miniAllStrings(): void
 }
 
+declare module '@strudel/tonal' {
+  export const scale: any
+  export const chord: any
+  export const voicing: any
+}
+
 declare module 'superdough' {
   export function registerSynthSounds(): void
   export function registerZZFXSounds(): void

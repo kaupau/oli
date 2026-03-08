@@ -27,13 +27,22 @@ export async function initAudio() {
   registerSynthSounds()
   registerZZFXSounds()
 
+  // Load default drum samples from Strudel CDN
+  await samples('github:tidalcycles/Dirt-Samples/master', undefined, { tag: 'default' })
+
   // Enable mini-notation parsing for string patterns
   // This makes sound("bd sd") work instead of needing mini`bd sd`
   miniAllStrings()
 
   // Register all Strudel functions in the global scope
-  // This makes functions like sound(), note(), stack() available
-  await strudel.evalScope(strudel, import('@strudel/webaudio'), import('superdough'), import('@strudel/mini'))
+  // This makes functions like sound(), note(), stack(), scale() available
+  await strudel.evalScope(
+    strudel,
+    import('@strudel/webaudio'),
+    import('superdough'),
+    import('@strudel/mini'),
+    import('@strudel/tonal')
+  )
 
   // Create the webaudio REPL
   strudelRepl = webaudioRepl({

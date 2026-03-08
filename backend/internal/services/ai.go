@@ -14,6 +14,7 @@ const StrudelSystemPrompt = `You are a professional music producer creating poli
 3. NEVER make static loops - use LFOs, pattern variation, and evolving parameters
 4. Create 8-16 bar phrases with .slow(2) or .slow(4) for musical structure
 5. Use .sometimes(), .often(), .rarely() for humanization
+6. For drums use EXACT sample names: "bd" (kick), "sd" (sd), "hh" (closed hat), "oh" (open hat), "cp" (clap), "cr" (crash)
 
 ## ESSENTIAL MOVEMENT TECHNIQUES
 
@@ -39,7 +40,7 @@ const StrudelSystemPrompt = `You are a professional music producer creating poli
 ` + "```" + `javascript
 sound("bd").euclid(3,8)                 // 3 hits spread over 8 steps
 sound("hh").euclid(5,8)                 // Classic funk hi-hat
-sound("snare").euclid(2,8,1)            // Offset snare
+sound("sd").euclid(2,8,1)            // Offset sd
 ` + "```" + `
 
 **Polyrhythms/Polymeters (layers at different speeds):**
@@ -113,7 +114,7 @@ n("<0 3 7 10> <3 7 10 12> <7 10 12 15> <10 7 3 0>")
 setcpm(85/4)
 stack(
   sound("bd ~ bd ~").lpf(800).gain(0.8).sometimes(x => x.speed(0.9)),
-  sound("~ snare ~ snare").lpf(3000).gain(0.6).room(0.5)
+  sound("~ sd ~ sd").lpf(3000).gain(0.6).room(0.5)
     .rarely(x => x.delay(0.25)),
   sound("hh*8").gain(perlin.range(0.15, 0.4)).hpf(5000)
     .pan(sine.range(0.3, 0.7).fast(0.5))
@@ -160,7 +161,7 @@ stack(
     .s("sawtooth").lpf(sine.range(80, 180).slow(8))
     .decay(perlin.range(0.35, 0.55)).gain(0.9).distort(0.05),
   sound("bd ~ ~ bd ~ ~ bd ~").gain(0.55),
-  sound("~ ~ ~ ~ snare ~ ~ ~").gain(0.8).room(0.2)
+  sound("~ ~ ~ ~ sd ~ ~ ~").gain(0.8).room(0.2)
     .sometimes(x => x.speed(1.1)),
   sound("[hh hh hh]*4").gain(perlin.range(0.25, 0.5)).hpf(6000)
     .pan(sine.range(0.35, 0.65).fast(0.5))
@@ -180,7 +181,7 @@ stack(
 setcpm(108/4)
 stack(
   sound("[bd ~] bd [~ bd] ~").gain(0.8).lpf(1000),
-  sound("~ snare ~ snare").gain(0.65).room(0.25)
+  sound("~ sd ~ sd").gain(0.65).room(0.25)
     .sometimes(x => x.speed(1.05)),
   sound("[hh ~] hh [hh ~] hh").gain(perlin.range(0.3, 0.5)).hpf(5000)
     .pan(sine.range(0.35, 0.65).slow(2))
@@ -203,7 +204,7 @@ stack(
 setcpm(130/4)
 stack(
   sound("bd ~ ~ bd ~ bd ~ ~").gain(0.8),
-  sound("~ ~ ~ snare ~ ~ ~ ~").gain(0.7).room(0.25)
+  sound("~ ~ ~ sd ~ ~ ~ ~").gain(0.7).room(0.25)
     .sometimes(x => x.delay(0.125)),
   sound("[hh ~] hh [~ hh] hh [hh ~] hh [~ hh] hh")
     .gain(perlin.range(0.3, 0.55)).hpf(6000)
@@ -278,10 +279,10 @@ func classifySample(name string) string {
 		return "kick/bass"
 	}
 
-	if strings.Contains(lower, "snare") || strings.Contains(lower, "snr") ||
+	if strings.Contains(lower, "sd") || strings.Contains(lower, "snr") ||
 		strings.Contains(lower, "clap") || strings.Contains(lower, "snap") ||
 		strings.Contains(lower, "rim") || strings.Contains(lower, "sd") {
-		return "snare/clap"
+		return "sd/clap"
 	}
 
 	if strings.Contains(lower, "hat") || strings.Contains(lower, "hh") ||
@@ -330,7 +331,7 @@ func (s *Service) GetSystemPrompt(soundBanks []string) string {
 		}
 
 		// Show samples grouped by role
-		roles := []string{"kick/bass", "snare/clap", "hihat/cymbal", "percussion", "synth/keys", "other"}
+		roles := []string{"kick/bass", "sd/clap", "hihat/cymbal", "percussion", "synth/keys", "other"}
 		for _, role := range roles {
 			samples := samplesByRole[role]
 			if len(samples) == 0 {
