@@ -74,7 +74,6 @@ export function ShareView() {
 
     const interval = setInterval(() => {
       frameRef.current++
-      const t = frameRef.current
 
       const freqData = getFrequencyData()
       const waveData = getWaveformData()
