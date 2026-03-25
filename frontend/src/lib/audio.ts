@@ -140,28 +140,49 @@ export async function loadSoundBanks(banks: SoundBank[]) {
 
 // Preprocess code to ensure it's valid Strudel code
 function preprocessCode(code: string): string {
-  // Check if code already has setcpm and stack structure (AI-generated proper format)
-  // This handles multi-line code like: setcpm(120/4)\nstack(\n  sound(...),\n  note(...)\n)
+  // Check for tempo setting (setcpm or setcps)
   const hasSetcpm = /setcpm\s*\(/.test(code)
+  const hasSetcps = /setcps\s*\(/.test(code)
+  const hasTempo = hasSetcpm || hasSetcps
   const hasStack = /\bstack\s*\(/.test(code)
 
-  if (hasSetcpm && hasStack) {
-    // Code has both but needs to be combined into a single expression
-    // Extract setcpm call
-    const setcpmMatch = code.match(/setcpm\s*\([^)]+\)/)
-    if (setcpmMatch) {
-      // Remove setcpm and strip comments
+  // Extract tempo call if present
+  const tempoMatch = code.match(/set(cpm|cps)\s*\([^)]+\)/)
+  const tempoCall = tempoMatch ? tempoMatch[0] : null
+
+  if (hasTempo && hasStack) {
+    // Code has tempo and stack - combine into single expression
+    if (tempoCall) {
       const cleanCode = code
-        .replace(/setcpm\s*\([^)]+\)\s*\n?/, '') // Remove setcpm line
+        .replace(/set(cpm|cps)\s*\([^)]+\)\s*\n?/, '') // Remove tempo line
         .split('\n')
         .map(line => line.replace(/\/\/.*$/, '')) // Remove inline comments
         .join('\n')
         .trim()
 
-      // Combine as comma expression: (setcpm(...), stack(...))
-      const combined = `(${setcpmMatch[0]}, ${cleanCode})`
-      console.log('[audio] Combined setcpm+stack into single expression')
+      const combined = `(${tempoCall}, ${cleanCode})`
+      console.log('[audio] Combined tempo+stack into single expression')
       return combined
+    }
+  }
+
+  if (hasTempo && !hasStack) {
+    // Has tempo but no stack - it's a single pattern expression
+    // Remove tempo, then combine
+    if (tempoCall) {
+      const cleanCode = code
+        .replace(/set(cpm|cps)\s*\([^)]+\)\s*\n?/, '')
+        .split('\n')
+        .map(line => line.replace(/\/\/.*$/, '').trim())
+        .filter(line => line.length > 0)
+        .join('\n')
+        .trim()
+
+      if (cleanCode) {
+        const combined = `(${tempoCall}, ${cleanCode})`
+        console.log('[audio] Combined tempo+pattern into single expression')
+        return combined
+      }
     }
   }
 
@@ -183,27 +204,24 @@ function preprocessCode(code: string): string {
   )
 
   if (patternLines.length >= 1) {
-    // Extract setcpm if present
-    const setcpmMatch = code.match(/setcpm\s*\([^)]+\)/)
-    const setcpm = setcpmMatch ? setcpmMatch[0] : 'setcpm(120/4)'
+    // Extract tempo if present
+    const tempo = tempoCall || 'setcpm(120/4)'
 
-    // Remove setcpm from lines if present
-    const filteredCode = code.replace(/setcpm\s*\([^)]+\)\s*\n?/, '')
+    // Remove tempo from code if present
+    const filteredCode = code.replace(/set(cpm|cps)\s*\([^)]+\)\s*\n?/, '')
 
     // Get pattern lines, strip inline comments, and wrap them in stack()
     const codeLines = filteredCode.split('\n')
-      .map(line => line.replace(/\/\/.*$/, '').trim()) // Remove inline comments
+      .map(line => line.replace(/\/\/.*$/, '').trim())
       .filter(line => line.length > 0)
 
-    // Use comma operator to combine setcpm and stack into a single expression
-    // This is valid JavaScript: (expr1, expr2) returns expr2 after evaluating expr1
-    const stackedCode = `(${setcpm}, stack(\n  ${codeLines.join(',\n  ')}\n))`
+    const stackedCode = `(${tempo}, stack(\n  ${codeLines.join(',\n  ')}\n))`
     console.log('[audio] Preprocessed code to use stack()')
     return stackedCode
   }
 
-  // Single pattern - combine with setcpm using comma operator
-  if (!code.includes('setcpm')) {
+  // Single pattern - combine with default tempo using comma operator
+  if (!hasTempo) {
     return `(setcpm(120/4), ${code.trim()})`
   }
 

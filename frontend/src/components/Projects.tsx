@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useStore, type Project } from '../stores/app'
-import { fetchProjects, createProject, getProject, deleteProject, updateProject, duplicateProject } from '../lib/api'
+import { fetchProjects, createProject, getProject, deleteProject, updateProject, duplicateProject, createShare } from '../lib/api'
 
 export function Projects() {
   const { projects, setProjects, currentProject, setCurrentProject, setCode, code } = useStore()
@@ -11,6 +11,7 @@ export function Projects() {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editName, setEditName] = useState('')
   const [menuOpenId, setMenuOpenId] = useState<number | null>(null)
+  const [shareStatus, setShareStatus] = useState<string | null>(null)
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastSavedCodeRef = useRef<string>('')
 
@@ -123,6 +124,20 @@ export function Projects() {
       setCurrentProject(copy)
       lastSavedCodeRef.current = copy.code || ''
       setHasUnsavedChanges(false)
+    }
+    setMenuOpenId(null)
+  }
+
+  const handleShareProject = async (project: Project) => {
+    try {
+      const share = await createShare(project.code, project.name)
+      const shareUrl = `${window.location.origin}/s/${share.id}`
+      await navigator.clipboard.writeText(shareUrl)
+      setShareStatus('Link copied!')
+      setTimeout(() => setShareStatus(null), 2000)
+    } catch {
+      setShareStatus('Failed to share')
+      setTimeout(() => setShareStatus(null), 2000)
     }
     setMenuOpenId(null)
   }
@@ -259,6 +274,12 @@ export function Projects() {
                     {menuOpenId === project.id && (
                       <div className="absolute right-2 top-full mt-1 w-28 bg-[#1a1a1a] border border-[#333] rounded shadow-lg z-10 overflow-hidden">
                         <button
+                          onClick={(e) => { e.stopPropagation(); handleShareProject(project) }}
+                          className="w-full px-3 py-1.5 text-left text-[#a78bfa] hover:bg-[#252525]"
+                        >
+                          share
+                        </button>
+                        <button
                           onClick={(e) => handleStartRename(project, e)}
                           className="w-full px-3 py-1.5 text-left text-[#888] hover:bg-[#252525] hover:text-[#ccc]"
                         >
@@ -284,12 +305,16 @@ export function Projects() {
             )}
           </div>
 
-          {/* Footer with save all hint */}
-          {currentProject && (
+          {/* Footer with save all hint or share status */}
+          {shareStatus ? (
+            <div className="px-3 py-2 border-t border-[#333] text-[10px] text-[#a78bfa]">
+              {shareStatus}
+            </div>
+          ) : currentProject ? (
             <div className="px-3 py-2 border-t border-[#333] text-[10px] text-[#444]">
               auto-saves after changes
             </div>
-          )}
+          ) : null}
         </div>
       )}
     </div>

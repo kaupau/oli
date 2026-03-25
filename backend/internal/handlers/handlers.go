@@ -48,6 +48,12 @@ func (h *Handler) basicAuth() gin.HandlerFunc {
 }
 
 func (h *Handler) RegisterRoutes(r *gin.Engine) {
+	// Public routes (no auth required)
+	public := r.Group("/api/public")
+	{
+		public.GET("/shares/:id", h.GetShare)
+	}
+
 	// Add basic auth if password is set
 	if h.password != "" {
 		r.Use(h.basicAuth())
@@ -67,6 +73,9 @@ func (h *Handler) RegisterRoutes(r *gin.Engine) {
 		api.PUT("/projects/:id", h.UpdateProject)
 		api.DELETE("/projects/:id", h.DeleteProject)
 		api.POST("/projects/:id/duplicate", h.DuplicateProject)
+
+		api.POST("/shares", h.CreateShare)
+		api.POST("/shares/:id/fork", h.ForkShare)
 
 		api.POST("/chat", h.Chat)
 	}
@@ -303,4 +312,59 @@ func (h *Handler) DuplicateProject(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, copy)
+}
+
+// Share handlers
+
+func (h *Handler) CreateShare(c *gin.Context) {
+	var req struct {
+		Code string `json:"code" binding:"required"`
+		Name string `json:"name"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	share, err := h.svc.CreateShare(req.Code, req.Name)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, share)
+}
+
+func (h *Handler) GetShare(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid share id"})
+		return
+	}
+
+	share, err := h.svc.GetShare(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "share not found"})
+		return
+	}
+	c.JSON(http.StatusOK, share)
+}
+
+func (h *Handler) ForkShare(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid share id"})
+		return
+	}
+
+	var req struct {
+		Name string `json:"name"`
+	}
+	c.ShouldBindJSON(&req)
+
+	project, err := h.svc.ForkShare(id, req.Name)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, project)
 }

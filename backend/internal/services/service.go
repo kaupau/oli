@@ -1,6 +1,7 @@
 package services
 
 import (
+	"crypto/rand"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -179,4 +180,46 @@ func (s *Service) GetUploadDir() string {
 func (s *Service) ServeFile(filename string) (io.ReadCloser, error) {
 	path := filepath.Join(s.uploadDir, filename)
 	return os.Open(path)
+}
+
+// Share methods
+
+func generateShortID() string {
+	const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
+	const length = 8
+	b := make([]byte, length)
+	rand.Read(b)
+	for i := range b {
+		b[i] = charset[int(b[i])%len(charset)]
+	}
+	return string(b)
+}
+
+func (s *Service) CreateShare(code, name string) (*models.Share, error) {
+	if code == "" {
+		return nil, fmt.Errorf("code is required")
+	}
+	if name == "" {
+		name = "Untitled"
+	}
+	id := generateShortID()
+	return s.repo.CreateShare(id, code, name)
+}
+
+func (s *Service) GetShare(id string) (*models.Share, error) {
+	if id == "" {
+		return nil, fmt.Errorf("invalid share id")
+	}
+	return s.repo.GetShare(id)
+}
+
+func (s *Service) ForkShare(shareID, newName string) (*models.Project, error) {
+	share, err := s.repo.GetShare(shareID)
+	if err != nil {
+		return nil, fmt.Errorf("share not found")
+	}
+	if newName == "" {
+		newName = share.Name + " (fork)"
+	}
+	return s.repo.CreateProject(newName, share.Code)
 }

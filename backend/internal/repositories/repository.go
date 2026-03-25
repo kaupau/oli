@@ -40,6 +40,13 @@ func (r *Repository) InitSchema() error {
 		created_at TEXT DEFAULT CURRENT_TIMESTAMP,
 		updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 	);
+
+	CREATE TABLE IF NOT EXISTS shares (
+		id TEXT PRIMARY KEY,
+		code TEXT NOT NULL,
+		name TEXT NOT NULL,
+		created_at TEXT DEFAULT CURRENT_TIMESTAMP
+	);
 	`
 	_, err := r.db.Exec(schema)
 	return err
@@ -218,5 +225,41 @@ func (r *Repository) UpdateProject(id int64, name, code string) (*models.Project
 
 func (r *Repository) DeleteProject(id int64) error {
 	_, err := r.db.Exec("DELETE FROM projects WHERE id = ?", id)
+	return err
+}
+
+// Share methods
+
+func (r *Repository) CreateShare(id, code, name string) (*models.Share, error) {
+	now := time.Now().Format(time.RFC3339)
+	_, err := r.db.Exec(
+		"INSERT INTO shares (id, code, name, created_at) VALUES (?, ?, ?, ?)",
+		id, code, name, now,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &models.Share{
+		ID:        id,
+		Code:      code,
+		Name:      name,
+		CreatedAt: now,
+	}, nil
+}
+
+func (r *Repository) GetShare(id string) (*models.Share, error) {
+	var s models.Share
+	err := r.db.QueryRow(
+		"SELECT id, code, name, created_at FROM shares WHERE id = ?",
+		id,
+	).Scan(&s.ID, &s.Code, &s.Name, &s.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return &s, nil
+}
+
+func (r *Repository) DeleteShare(id string) error {
+	_, err := r.db.Exec("DELETE FROM shares WHERE id = ?", id)
 	return err
 }

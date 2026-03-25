@@ -28,3 +28,10 @@ type SoundBankWithFiles struct {
 	SoundBank
 	Files []SoundFile `json:"files"`
 }
+
+type Share struct {
+	ID        string `json:"id" db:"id"`
+	Code      string `json:"code" db:"code"`
+	Name      string `json:"name" db:"name"`
+	CreatedAt string `json:"created_at" db:"created_at"`
+}

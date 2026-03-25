@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useStore } from '../stores/app'
 import { initAudio, playPattern, stopPlayback, setTempo as setAudioTempo } from '../lib/audio'
+import { createShare } from '../lib/api'
 
 function IconRewind({ size = 14 }: { size?: number }) {
   return (
@@ -37,23 +38,29 @@ function IconStop({ size = 14 }: { size?: number }) {
 }
 
 export function Controls() {
-  const { isPlaying, setIsPlaying, isAdvancedMode, setIsAdvancedMode, code, setError, tempo, setTempo } = useStore()
+  const { isPlaying, setIsPlaying, isAdvancedMode, setIsAdvancedMode, code, setError, tempo, setTempo, currentProject } = useStore()
   const [editingTempo, setEditingTempo] = useState(false)
   const [tempoInput, setTempoInput] = useState(String(tempo))
+  const [shareStatus, setShareStatus] = useState<string | null>(null)
 
   const handlePlay = async () => {
     try {
+      console.log('[Controls] Initializing audio...')
       await initAudio()
+      console.log('[Controls] Audio initialized')
       if (isPlaying) {
         stopPlayback()
         setIsPlaying(false)
       } else {
+        console.log('[Controls] Playing code:', code)
         setAudioTempo(tempo)
-        playPattern(code)
+        await playPattern(code)
         setIsPlaying(true)
+        console.log('[Controls] Playback started')
       }
-    } catch {
-      setError('Failed to initialize audio')
+    } catch (err: any) {
+      console.error('[Controls] Error:', err)
+      setError(err.message || 'Failed to initialize audio')
     }
   }
 
@@ -103,6 +110,20 @@ export function Controls() {
     setAudioTempo(newTempo)
   }
 
+  const handleShare = async () => {
+    try {
+      const name = currentProject?.name || 'Untitled'
+      const share = await createShare(code, name)
+      const shareUrl = `${window.location.origin}/s/${share.id}`
+      await navigator.clipboard.writeText(shareUrl)
+      setShareStatus('copied!')
+      setTimeout(() => setShareStatus(null), 2000)
+    } catch {
+      setShareStatus('failed')
+      setTimeout(() => setShareStatus(null), 2000)
+    }
+  }
+
   const transportBtn = "w-7 h-7 flex items-center justify-center rounded transition-all duration-100"
 
   return (
@@ -141,6 +162,17 @@ export function Controls() {
           +
         </button>
       </div>
+
+      <span className="text-[#333]">│</span>
+
+      {/* Share */}
+      <button
+        onClick={handleShare}
+        className="px-2 py-1 rounded text-[#555] hover:text-[#a78bfa] transition-colors"
+        title="Share this beat"
+      >
+        {shareStatus || 'share'}
+      </button>
 
       <span className="text-[#333]">│</span>
 

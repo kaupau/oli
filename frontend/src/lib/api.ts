@@ -105,3 +105,38 @@ export async function chat(message: string, history: ChatMsg[], soundBanks: stri
   if (data.error) throw new Error(data.error)
   return data.response
 }
+
+// Share API
+
+export interface Share {
+  id: string
+  code: string
+  name: string
+  created_at: string
+}
+
+export async function createShare(code: string, name: string): Promise<Share> {
+  const res = await fetch(`${API_BASE}/shares`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code, name }),
+  })
+  if (!res.ok) throw new Error('Failed to create share')
+  return res.json()
+}
+
+export async function getShare(id: string): Promise<Share> {
+  const res = await fetch(`${API_BASE}/public/shares/${id}`)
+  if (!res.ok) throw new Error('Share not found')
+  return res.json()
+}
+
+export async function forkShare(id: string, name?: string) {
+  const res = await fetch(`${API_BASE}/shares/${id}/fork`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  })
+  if (!res.ok) throw new Error('Failed to fork share')
+  return res.json()
+}
