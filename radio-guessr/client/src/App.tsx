@@ -5,6 +5,7 @@ import { useStats } from "./lib/stats";
 import { Choices } from "./components/Choices";
 import { StatsModal } from "./components/StatsModal";
 import { Disc } from "./components/Disc";
+import { Cover } from "./components/Cover";
 import { burstConfetti } from "./lib/confetti";
 
 type Phase = "preroll" | "listen" | "reveal";
@@ -112,7 +113,7 @@ export default function App() {
             title={correctChoice?.title}
             artist={correctChoice?.artist}
             album={reveal?.album}
-            artworkUrl={reveal?.artworkUrl}
+            coverUrl={phase === "reveal" ? reveal?.artworkUrl : current?.artworkUrl}
             wasCorrect={wasCorrect}
             guessed={myChoiceId !== null}
             muted={muted}
@@ -169,7 +170,7 @@ function PlayerStrip({
   title,
   artist,
   album,
-  artworkUrl,
+  coverUrl,
   wasCorrect,
   guessed,
   muted,
@@ -184,7 +185,7 @@ function PlayerStrip({
   title?: string;
   artist?: string;
   album?: string;
-  artworkUrl?: string;
+  coverUrl?: string;
   wasCorrect: boolean | null;
   guessed: boolean;
   muted: boolean;
@@ -214,9 +215,7 @@ function PlayerStrip({
 
   return (
     <div className="flex items-center gap-3">
-      <div className="shrink-0">
-        <Disc size={58} spinning={playing} src={phase === "reveal" ? artworkUrl : undefined} />
-      </div>
+      <Cover src={coverUrl} revealed={phase === "reveal"} playing={playing} size={58} />
 
       <div className="display min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">

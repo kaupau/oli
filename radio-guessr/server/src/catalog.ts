@@ -92,6 +92,24 @@ async function fetchItunesCatalog(): Promise<Track[]> {
   return [...byId.values()];
 }
 
+// A deterministic, colorful cover for each demo track (no real artwork
+// offline). Hue follows the tone's pitch so each track gets a distinct look.
+function demoCover(tone: { freq: number }): string {
+  const h = Math.round(tone.freq * 1.4) % 360;
+  const c1 = `hsl(${h} 70% 56%)`;
+  const c2 = `hsl(${(h + 45) % 360} 72% 40%)`;
+  const c3 = `hsl(${(h + 190) % 360} 85% 66%)`;
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">` +
+    `<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">` +
+    `<stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs>` +
+    `<rect width="100" height="100" fill="url(#g)"/>` +
+    `<circle cx="68" cy="32" r="30" fill="${c3}" opacity="0.55"/>` +
+    `<rect y="72" width="100" height="28" fill="#000" opacity="0.16"/>` +
+    `</svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
 function demoCatalog(publicDir: string): Track[] {
   generateDemoTones(publicDir);
   return DEMO_TONES.map((tone) => ({
@@ -101,7 +119,7 @@ function demoCatalog(publicDir: string): Track[] {
     album: "Mixtape Demo",
     genre: "Demo",
     previewUrl: `/demo/${tone.id}.wav`,
-    artworkUrl: undefined,
+    artworkUrl: demoCover(tone),
   }));
 }
 
