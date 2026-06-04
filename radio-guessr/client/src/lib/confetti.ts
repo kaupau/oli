@@ -1,7 +1,8 @@
 // Tiny dependency-free confetti burst. Spawns a full-screen canvas, rains
 // colored particles with gravity for ~1.4s, then removes itself.
 
-const COLORS = ["#7c3aed", "#6366f1", "#ec4899", "#10b981", "#f59e0b", "#38bdf8"];
+// Bright web-safe palette to match the retro vibe.
+const COLORS = ["#ff2d95", "#ffd400", "#2dff6a", "#2dd4ff", "#b22dff", "#ff7a00"];
 
 type P = {
   x: number;

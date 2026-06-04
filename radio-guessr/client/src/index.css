@@ -1,7 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
+  /* Win95 silver palette */
+  --silver: #c3c7cb;
+  --silver-light: #dfe3e7;
+  --silver-hi: #ffffff;
+  --silver-shadow: #868a8e;
+  --silver-dark: #404040;
 }
 
 html,
@@ -12,38 +18,165 @@ body,
 
 body {
   margin: 0;
-  /* Notion-ish warm off-white with a soft playful tint at the top. */
-  background:
-    radial-gradient(120% 60% at 50% 0%, #efeafc 0%, rgba(247, 247, 245, 0) 55%),
-    #f7f7f5;
+  color: #e8e8f0;
+  font-family: "Tahoma", "Geneva", "MS Sans Serif", Verdana, sans-serif;
+  font-size: 13px;
+  -webkit-font-smoothing: none;
+  /* GeoCities-era night sky: gradient nebula + tiled starfield. */
+  background-color: #05050f;
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(70, 50, 160, 0.45), transparent 42%),
+    radial-gradient(circle at 85% 4%, rgba(150, 40, 130, 0.4), transparent 40%),
+    radial-gradient(1px 1px at 20px 30px, #fff, transparent),
+    radial-gradient(1px 1px at 90px 70px, #bcd, transparent),
+    radial-gradient(1px 1px at 140px 20px, #fff, transparent),
+    radial-gradient(1px 1px at 60px 110px, #ddf, transparent),
+    radial-gradient(1.5px 1.5px at 175px 95px, #fff, transparent);
+  background-size: auto, auto, 200px 140px, 200px 140px, 200px 140px, 200px 140px, 200px 140px;
   background-attachment: fixed;
-  color: #2f2c28;
-  -webkit-font-smoothing: antialiased;
-  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-    Roboto, "Helvetica Neue", sans-serif;
+  background-repeat: no-repeat, no-repeat, repeat, repeat, repeat, repeat, repeat;
 }
 
-/* Equalizer bars. */
+/* ---- Win95 bevels ---- */
+.bevel-out {
+  background: var(--silver);
+  border: 2px solid;
+  border-top-color: var(--silver-light);
+  border-left-color: var(--silver-light);
+  border-right-color: var(--silver-dark);
+  border-bottom-color: var(--silver-dark);
+  box-shadow: inset 1px 1px 0 var(--silver-hi), inset -1px -1px 0 var(--silver-shadow);
+}
+.bevel-in {
+  background: var(--silver);
+  border: 2px solid;
+  border-top-color: var(--silver-dark);
+  border-left-color: var(--silver-dark);
+  border-right-color: var(--silver-light);
+  border-bottom-color: var(--silver-light);
+  box-shadow: inset 1px 1px 0 var(--silver-shadow), inset -1px -1px 0 var(--silver-hi);
+}
+
+/* ---- Beveled button ---- */
+.btn95 {
+  background: var(--silver);
+  border: 2px solid;
+  border-top-color: var(--silver-light);
+  border-left-color: var(--silver-light);
+  border-right-color: var(--silver-dark);
+  border-bottom-color: var(--silver-dark);
+  box-shadow: inset 1px 1px 0 var(--silver-hi), inset -1px -1px 0 var(--silver-shadow);
+  color: #000;
+  font-family: inherit;
+  cursor: pointer;
+  user-select: none;
+}
+.btn95:hover:not(:disabled) {
+  background: #cdd1d5;
+}
+.btn95:active:not(:disabled),
+.btn95.is-pressed {
+  border-top-color: var(--silver-dark);
+  border-left-color: var(--silver-dark);
+  border-right-color: var(--silver-light);
+  border-bottom-color: var(--silver-light);
+  box-shadow: inset 1px 1px 0 var(--silver-shadow), inset -1px -1px 0 var(--silver-hi);
+}
+.btn95:active:not(:disabled) > * {
+  transform: translate(1px, 1px);
+}
+.btn95:disabled {
+  cursor: default;
+}
+.btn95:focus-visible {
+  outline: 1px dotted #000;
+  outline-offset: -4px;
+}
+
+/* ---- Title bar (active window) ---- */
+.titlebar {
+  background: linear-gradient(90deg, #00007b 0%, #1084d0 100%);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ---- LCD readout ---- */
+.lcd {
+  background: #07140a;
+  color: #36ff7a;
+  font-family: "Courier New", "Lucida Console", monospace;
+  text-shadow: 0 0 5px rgba(54, 255, 122, 0.7);
+  letter-spacing: 0.06em;
+}
+.lcd-amber {
+  color: #ffb43a;
+  text-shadow: 0 0 5px rgba(255, 180, 58, 0.7);
+}
+/* faint CRT scanlines for LCD wells */
+.scanlines {
+  position: relative;
+}
+.scanlines::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.25) 3px
+  );
+}
+
+/* ---- Animations ---- */
+@keyframes blink {
+  50% { opacity: 0; }
+}
+.blink {
+  animation: blink 1s steps(1) infinite;
+}
+
+@keyframes marquee {
+  from { transform: translateX(100%); }
+  to { transform: translateX(-100%); }
+}
+.marquee {
+  display: inline-block;
+  white-space: nowrap;
+  will-change: transform;
+  animation: marquee 14s linear infinite;
+}
+.marquee-fast {
+  animation-duration: 9s;
+}
+
 @keyframes eq {
-  0%, 100% { transform: scaleY(0.28); }
+  0%, 100% { transform: scaleY(0.18); }
   50% { transform: scaleY(1); }
 }
 
-/* Spinning mystery disc. */
-@keyframes spin-slow {
-  to { transform: rotate(360deg); }
-}
-
-/* Little pop when you pick / when the answer reveals. */
-@keyframes pop {
-  0% { transform: scale(0.96); }
-  60% { transform: scale(1.03); }
-  100% { transform: scale(1); }
-}
-.animate-pop { animation: pop 0.25s ease-out; }
-
-/* Floating bob for the big emoji on the intro screen. */
 @keyframes bob {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes pop {
+  0% { transform: scale(0.97); }
+  60% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+.animate-pop { animation: pop 0.22s ease-out; }
+
+/* rainbow webring-style text */
+@keyframes hue {
+  to { filter: hue-rotate(360deg); }
+}
+.rainbow {
+  background: linear-gradient(90deg, #ff2d95, #ffd400, #2dff6a, #2dd4ff, #b22dff, #ff2d95);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: hue 6s linear infinite;
 }
