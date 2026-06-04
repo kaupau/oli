@@ -2,9 +2,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRadio } from "./lib/ws";
 import { useSyncedAudio } from "./lib/audio";
 import { useStats } from "./lib/stats";
-import { Equalizer } from "./components/Equalizer";
 import { Choices } from "./components/Choices";
 import { StatsModal } from "./components/StatsModal";
+import { Disc } from "./components/Disc";
 import { burstConfetti } from "./lib/confetti";
 
 type Phase = "preroll" | "listen" | "reveal";
@@ -82,45 +82,70 @@ export default function App() {
     reveal && current ? current.choices.find((c) => c.id === reveal.correctChoiceId) : null;
   const wasCorrect = reveal && myChoiceId ? myChoiceId === reveal.correctChoiceId : null;
 
-  const mm = Math.floor(secondsLeft / 60);
-  const timeStr = `${mm}:${String(secondsLeft % 60).padStart(2, "0")}`;
+  const totalSec =
+    phase === "reveal"
+      ? Math.round((current?.revealMs ?? 0) / 1000)
+      : Math.round((current?.listenMs ?? 0) / 1000);
 
   return (
-    <div className="mx-auto flex w-full max-w-[460px] flex-col gap-7 px-5 py-9 sm:py-12">
-      <Header
-        listeners={radio.listeners}
-        streak={stats.currentStreak}
-        status={radio.status}
-        muted={muted}
-        onToggleMute={() => setMuted((m) => !m)}
-        onShowStats={() => setShowStats(true)}
-      />
+    <div className="desktop">
+      <div className="win">
+        <div className="titlebar-mac">
+          <div className="traffic">
+            <span className="dot r" />
+            <span className="dot y" />
+            <span className="dot g" />
+          </div>
+          <div className="tt">
+            <Disc size={14} />
+            Mixtape
+          </div>
+        </div>
 
-      <Player
-        phase={phase}
-        timeStr={timeStr}
-        progress={progress}
-        playing={playing && !muted}
-        title={correctChoice?.title}
-        artist={correctChoice?.artist}
-        artworkUrl={reveal?.artworkUrl}
-        wasCorrect={wasCorrect}
-        guessed={myChoiceId !== null}
-      />
+        <div className="px-4 pt-4 pb-3">
+          <PlayerStrip
+            phase={phase}
+            progress={progress}
+            secondsLeft={secondsLeft}
+            totalSec={totalSec}
+            playing={playing && !muted}
+            title={correctChoice?.title}
+            artist={correctChoice?.artist}
+            album={reveal?.album}
+            artworkUrl={reveal?.artworkUrl}
+            wasCorrect={wasCorrect}
+            guessed={myChoiceId !== null}
+            muted={muted}
+            onToggleMute={() => setMuted((m) => !m)}
+            onShowStats={() => setShowStats(true)}
+          />
 
-      {current ? (
-        <Choices
-          choices={current.choices}
-          phase={phase}
-          myChoiceId={myChoiceId}
-          reveal={reveal}
-          onPick={pick}
-        />
-      ) : (
-        <div className="panel px-4 py-8 text-center muted">Connecting to the station…</div>
-      )}
+          <div className="mt-3.5">
+            {current ? (
+              <Choices
+                choices={current.choices}
+                phase={phase}
+                myChoiceId={myChoiceId}
+                reveal={reveal}
+                onPick={pick}
+              />
+            ) : (
+              <div className="list px-4 py-8 text-center soft">Connecting to the station…</div>
+            )}
+          </div>
+        </div>
 
-      <FooterMini roundIndex={current ? current.index + 1 : null} />
+        <div className="statusbar">
+          <span className="flex items-center gap-1.5">
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${radio.status === "open" ? "pulse" : ""}`}
+              style={{ background: radio.status === "open" ? "#28c840" : "#b8bcc4" }}
+            />
+            {radio.status === "open" ? "Live" : "Off air"} · {radio.listeners} listening
+          </span>
+          <span>Round {current ? current.index + 1 : "—"}</span>
+        </div>
+      </div>
 
       {!armed && current && <ArmOverlay onArm={arm} />}
       {showStats && <StatsModal stats={stats} onClose={() => setShowStats(false)} />}
@@ -130,163 +155,128 @@ export default function App() {
 
 /* ----------------------------------------------------------------- */
 
-function Wordmark({ className = "" }: { className?: string }) {
-  return (
-    <span className={`font-semibold ${className}`} style={{ letterSpacing: "0.3em" }}>
-      MIXTAPE
-    </span>
-  );
+function fmt(sec: number) {
+  const s = Math.max(0, Math.round(sec));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
-function Header({
-  listeners,
-  streak,
-  status,
+function PlayerStrip({
+  phase,
+  progress,
+  secondsLeft,
+  totalSec,
+  playing,
+  title,
+  artist,
+  album,
+  artworkUrl,
+  wasCorrect,
+  guessed,
   muted,
   onToggleMute,
   onShowStats,
 }: {
-  listeners: number;
-  streak: number;
-  status: string;
+  phase: Phase;
+  progress: number;
+  secondsLeft: number;
+  totalSec: number;
+  playing: boolean;
+  title?: string;
+  artist?: string;
+  album?: string;
+  artworkUrl?: string;
+  wasCorrect: boolean | null;
+  guessed: boolean;
   muted: boolean;
   onToggleMute: () => void;
   onShowStats: () => void;
 }) {
-  const live = status === "open";
-  return (
-    <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
-      <div>
-        <Wordmark className="text-[15px]" />
-        <div className="label mt-1.5">98.7 FM</div>
-      </div>
-      <div className="flex items-center gap-2 text-xs">
-        <span className="muted flex items-center gap-1.5">
-          <span
-            className={`h-1.5 w-1.5 rounded-full ${live ? "pulse" : ""}`}
-            style={{ background: live ? "var(--accent)" : "var(--faint)" }}
-          />
-          {live ? "Live" : "Off air"}
-        </span>
-        <span className="muted">· {listeners} listening</span>
-        {streak > 0 && <span className="accent">· streak {streak}</span>}
-        <button className="btn-ghost ml-1 px-2.5 py-1" onClick={onToggleMute}>
-          {muted ? "Muted" : "Sound"}
-        </button>
-        <button className="btn-ghost px-2.5 py-1" onClick={onShowStats}>
-          Stats
-        </button>
-      </div>
-    </header>
-  );
-}
-
-function Player({
-  phase,
-  timeStr,
-  progress,
-  playing,
-  title,
-  artist,
-  artworkUrl,
-  wasCorrect,
-  guessed,
-}: {
-  phase: Phase;
-  timeStr: string;
-  progress: number;
-  playing: boolean;
-  title?: string;
-  artist?: string;
-  artworkUrl?: string;
-  wasCorrect: boolean | null;
-  guessed: boolean;
-}) {
   const pct = Math.min(100, Math.max(0, progress * 100));
-  const heading =
-    phase === "reveal" ? "Now playing" : phase === "preroll" ? "Get ready" : "Guess the track";
-  const timerLabel = phase === "reveal" ? "Next in" : phase === "preroll" ? "Starts in" : "Time left";
+  const elapsed = Math.min(totalSec, Math.max(0, progress * totalSec));
+  const low = phase !== "reveal" && secondsLeft <= 5;
+
+  const status =
+    phase === "reveal" ? (
+      title ? (
+        <span key={title} className="fade-up">
+          <span className="font-semibold">{title}</span>
+          <span className="soft"> — {artist}</span>
+          {album ? <span className="faint"> · {album}</span> : null}
+        </span>
+      ) : (
+        "—"
+      )
+    ) : phase === "preroll" ? (
+      "Up next…"
+    ) : (
+      "Guess the track — A, B, C or D?"
+    );
 
   return (
-    <section className="panel flex flex-col gap-5 p-6">
-      <div className="flex items-start justify-between gap-4">
-        <div className="label pt-1">{heading}</div>
-        <div className="text-right leading-none">
-          <div className="label">{timerLabel}</div>
-          <div className="accent tnum mt-1.5 text-[30px] font-semibold leading-none">{timeStr}</div>
+    <div className="flex items-center gap-3">
+      <div className="shrink-0">
+        <Disc size={58} spinning={playing} src={phase === "reveal" ? artworkUrl : undefined} />
+      </div>
+
+      <div className="display min-w-0 flex-1">
+        <div className="flex items-center justify-between gap-2">
+          <div className="truncate text-[12.5px] leading-tight">{status}</div>
+          {phase === "reveal" && guessed && (
+            <span className={`shrink-0 text-[11px] font-semibold ${wasCorrect ? "accent" : "bad-t"}`}>
+              {wasCorrect ? "✓ Correct" : "✗ Missed"}
+            </span>
+          )}
+        </div>
+        <div className="mt-1.5 flex items-center gap-2">
+          <span className="tnum soft w-7 shrink-0 text-[11px]">{fmt(elapsed)}</span>
+          <div className="aqua-track flex-1">
+            <span style={{ width: `${pct}%` }} />
+          </div>
+          <span
+            className={`tnum w-9 shrink-0 text-right text-[12px] font-semibold ${
+              low ? "bad-t" : "accent"
+            }`}
+          >
+            −{fmt(secondsLeft)}
+          </span>
         </div>
       </div>
 
-      {/* Center: spectrum while listening, the revealed track on reveal. */}
-      <div className="flex min-h-[52px] items-center">
-        {phase === "reveal" ? (
-          <div key={title} className="fade-up flex w-full items-center gap-3">
-            {artworkUrl ? (
-              <img src={artworkUrl} alt="" className="h-12 w-12 rounded-md object-cover" />
-            ) : (
-              <div
-                className="accent grid h-12 w-12 place-items-center rounded-md text-lg"
-                style={{ background: "var(--surface-2)" }}
-              >
-                ♪
-              </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-[15px]">{title ?? "—"}</div>
-              <div className="muted truncate text-xs">{artist}</div>
-            </div>
-            <div className="shrink-0 text-xs">
-              {guessed ? (
-                wasCorrect ? (
-                  <span className="accent">✓ You got it</span>
-                ) : (
-                  <span className="bad">✗ Missed</span>
-                )
-              ) : (
-                <span className="faint">no guess</span>
-              )}
-            </div>
-          </div>
-        ) : (
-          <Equalizer playing={playing} />
-        )}
+      <div className="flex shrink-0 flex-col gap-1.5">
+        <button className="aqua-btn" onClick={onShowStats}>
+          Stats
+        </button>
+        <button className="aqua-btn" onClick={onToggleMute}>
+          {muted ? "Unmute" : "Sound"}
+        </button>
       </div>
-
-      <div className="track">
-        <span style={{ width: `${pct}%` }} />
-      </div>
-    </section>
-  );
-}
-
-function FooterMini({ roundIndex }: { roundIndex: number | null }) {
-  return (
-    <footer className="text-center text-xs muted">
-      Round {roundIndex ?? "—"} · the same song plays for everyone, everywhere.
-    </footer>
+    </div>
   );
 }
 
 function ArmOverlay({ onArm }: { onArm: () => void }) {
   return (
-    <div
-      className="fixed inset-0 z-40 grid place-items-center px-6"
-      style={{ background: "rgba(10,9,7,0.78)", backdropFilter: "blur(4px)" }}
-      onClick={onArm}
-    >
+    <div className="overlay" onClick={onArm}>
       <div
-        className="panel fade-up w-full max-w-sm p-8 text-center"
+        className="win fade-up max-w-[380px] p-6"
         onClick={(e) => e.stopPropagation()}
+        style={{ borderRadius: 12 }}
       >
-        <Wordmark className="text-xl" />
-        <div className="label mt-2">98.7 FM</div>
-        <p className="mt-6 text-sm leading-relaxed">
-          A short clip plays for everyone at once. Guess the track before time runs out.
-        </p>
-        <p className="faint mt-3 text-xs">Plays audio — turn your sound on.</p>
-        <button onClick={onArm} className="btn-accent mt-7 w-full py-3 text-sm">
-          Enter
-        </button>
+        <div className="flex gap-4">
+          <Disc size={56} />
+          <div className="min-w-0">
+            <div className="text-[15px] font-semibold">Welcome to Mixtape</div>
+            <p className="soft mt-1.5 text-[12.5px] leading-relaxed">
+              A short clip plays for everyone at once. Guess the track before time runs out. This
+              page plays audio — please turn your sound on.
+            </p>
+            <div className="mt-4 flex justify-end">
+              <button onClick={onArm} className="aqua-btn aqua-btn-blue px-6 py-1.5 text-[13px]">
+                Enter
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

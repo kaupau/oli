@@ -19,7 +19,13 @@ export function Choices({
   const total = reveal?.totalGuesses ?? 0;
 
   return (
-    <div className="flex flex-col gap-2.5">
+    <div className="list">
+      <div className="lhead">
+        <span className="w-[22px] shrink-0 text-center">#</span>
+        <span className="flex-1">Song</span>
+        <span className="w-12 shrink-0 text-right">{revealing ? "Votes" : ""}</span>
+      </div>
+
       {choices.map((c, i) => {
         const isMine = myChoiceId === c.id;
         const isCorrect = !!revealing && reveal!.correctChoiceId === c.id;
@@ -28,41 +34,42 @@ export function Choices({
         const pct = total > 0 ? Math.round((votes / total) * 100) : 0;
         const disabled = phase !== "listen" || (myChoiceId !== null && !isMine);
 
-        const state = revealing
+        const cls = revealing
           ? isCorrect
-            ? "is-correct"
+            ? "sel"
             : isWrongPick
-              ? "is-wrong"
-              : "is-dim"
+              ? "bad"
+              : "dim"
           : isMine
-            ? "is-mine"
-            : "";
+            ? "sel"
+            : i % 2 === 1
+              ? "stripe"
+              : "";
 
         return (
           <button
             key={c.id}
             disabled={disabled}
             onClick={() => onPick(c.id)}
-            className={`choice ${state}`}
+            className={`trow ${cls}`}
           >
-            <span className="choice-letter">{String.fromCharCode(65 + i)}</span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-[15px] leading-tight">{c.title}</span>
-              <span className="muted block truncate text-xs leading-tight">{c.artist}</span>
+            <span className="badge">{String.fromCharCode(65 + i)}</span>
+            <span className="min-w-0 flex-1 leading-tight">
+              <span className="block truncate text-[13.5px]">{c.title}</span>
+              <span className="sub soft block truncate text-[11.5px]">{c.artist}</span>
             </span>
-
-            {revealing ? (
-              <span className="tnum shrink-0 text-xs">
-                {isCorrect ? "✓ " : isWrongPick ? "✗ " : ""}
-                {pct}%
-              </span>
-            ) : isMine ? (
-              <span className="accent shrink-0 text-xs">your pick</span>
-            ) : null}
-
-            {revealing && (
-              <span className="choice-bar" style={{ width: `${pct}%` }} />
-            )}
+            <span className="tnum w-12 shrink-0 text-right text-[12px]">
+              {revealing ? (
+                <>
+                  {isCorrect ? "✓ " : isWrongPick ? "✗ " : ""}
+                  {pct}%
+                </>
+              ) : isMine ? (
+                "♪"
+              ) : (
+                ""
+              )}
+            </span>
           </button>
         );
       })}

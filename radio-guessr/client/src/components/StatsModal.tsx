@@ -8,49 +8,51 @@ export function StatsModal({
   onClose: () => void;
 }) {
   const accuracy = stats.played > 0 ? Math.round((stats.correct / stats.played) * 100) : 0;
-  const last = stats.history.slice(-32);
+  const last = stats.history.slice(-40);
 
   return (
-    <div
-      className="fixed inset-0 z-50 grid place-items-center px-6"
-      style={{ background: "rgba(10,9,7,0.78)", backdropFilter: "blur(4px)" }}
-      onClick={onClose}
-    >
-      <div
-        className="panel fade-up w-full max-w-sm p-7"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between">
-          <span className="label">Your stats</span>
-          <button onClick={onClose} className="btn-ghost px-2.5 py-1 text-xs">
-            Close
-          </button>
-        </div>
-
-        <div className="mt-5 grid grid-cols-4 gap-3">
-          <Stat label="Played" value={stats.played} />
-          <Stat label="Accuracy" value={`${accuracy}%`} />
-          <Stat label="Streak" value={stats.currentStreak} accent />
-          <Stat label="Best" value={stats.bestStreak} accent />
-        </div>
-
-        {last.length > 0 && (
-          <div className="mt-6">
-            <div className="label mb-2.5">Recent rounds</div>
-            <div className="flex flex-wrap gap-1.5">
-              {last.map((r, i) => (
-                <span
-                  key={i}
-                  title={r ? "Correct" : "Missed"}
-                  className="h-2.5 w-2.5 rounded-full"
-                  style={{ background: r ? "var(--accent)" : "var(--faint)" }}
-                />
-              ))}
-            </div>
+    <div className="overlay" onClick={onClose}>
+      <div className="win fade-up max-w-[380px]" onClick={(e) => e.stopPropagation()}>
+        <div className="titlebar-mac">
+          <div className="traffic">
+            <span className="dot r" onClick={onClose} style={{ cursor: "pointer" }} />
+            <span className="dot y" />
+            <span className="dot g" />
           </div>
-        )}
+          <div className="tt">Your Stats</div>
+        </div>
 
-        <p className="faint mt-6 text-xs">Saved on this device only.</p>
+        <div className="p-5">
+          <div className="grid grid-cols-4 gap-3 text-center">
+            <Stat label="Played" value={stats.played} />
+            <Stat label="Accuracy" value={`${accuracy}%`} />
+            <Stat label="Streak" value={stats.currentStreak} accent />
+            <Stat label="Best" value={stats.bestStreak} accent />
+          </div>
+
+          {last.length > 0 && (
+            <div className="mt-5">
+              <div className="soft mb-2 text-[11px]">Recent rounds</div>
+              <div className="flex flex-wrap gap-1.5">
+                {last.map((r, i) => (
+                  <span
+                    key={i}
+                    title={r ? "Correct" : "Missed"}
+                    className="h-3 w-3 rounded-full"
+                    style={{ background: r ? "#2f6fe0" : "#cdd2da" }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="mt-6 flex items-center justify-between">
+            <span className="faint text-[11px]">Saved on this device only.</span>
+            <button onClick={onClose} className="aqua-btn aqua-btn-blue px-6 py-1.5">
+              OK
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -67,12 +69,10 @@ function Stat({
 }) {
   return (
     <div>
-      <div
-        className={`tnum text-2xl font-semibold leading-none ${accent ? "accent" : ""}`}
-      >
+      <div className={`tnum text-2xl font-semibold leading-none ${accent ? "accent" : ""}`}>
         {value}
       </div>
-      <div className="label mt-1.5">{label}</div>
+      <div className="soft mt-1.5 text-[11px]">{label}</div>
     </div>
   );
 }
