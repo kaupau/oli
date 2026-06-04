@@ -19,7 +19,7 @@ export function StatsModal({
       <div className="bevel-out w-full max-w-md p-1 text-black" onClick={(e) => e.stopPropagation()}>
         {/* Title bar */}
         <div className="titlebar flex items-center justify-between px-2 py-1 text-sm leading-none">
-          <span>📊 Your Stats — RadioGuessr</span>
+          <span>📊 Your Stats — Mixtape</span>
           <button
             onClick={onClose}
             className="bevel-out grid h-4 w-4 place-items-center text-[10px] text-black"

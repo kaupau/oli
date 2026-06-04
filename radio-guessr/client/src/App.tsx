@@ -96,7 +96,7 @@ export default function App() {
         : "◄◄  NAME THAT TUNE — IS IT A, B, C OR D ?  ◄◄  GUESS BEFORE THE TIMER HITS ZERO  ►►►";
 
   return (
-    <div className="mx-auto w-full max-w-[640px] px-3 py-4">
+    <div className="mx-auto flex w-full max-w-[600px] flex-col gap-3 px-3 py-4">
       <NewsTicker />
       <SiteBanner
         listeners={radio.listeners}
@@ -116,23 +116,21 @@ export default function App() {
         artworkUrl={phase === "reveal" ? reveal?.artworkUrl : undefined}
       />
 
-      <div className="mt-3">
-        {current ? (
-          <Choices
-            choices={current.choices}
-            phase={phase}
-            myChoiceId={myChoiceId}
-            reveal={reveal}
-            onPick={pick}
-          />
-        ) : (
-          <div className="bevel-in p-4 text-center text-black">
-            <span className="lcd lcd-amber blink font-bold">CONNECTING TO STATION…</span>
-          </div>
-        )}
-      </div>
+      {current ? (
+        <Choices
+          choices={current.choices}
+          phase={phase}
+          myChoiceId={myChoiceId}
+          reveal={reveal}
+          onPick={pick}
+        />
+      ) : (
+        <div className="bevel-in p-4 text-center text-black">
+          <span className="lcd lcd-amber blink">CONNECTING TO STATION…</span>
+        </div>
+      )}
 
-      <p className="mt-3 text-center text-base tracking-wide text-white/55">
+      <p className="text-center text-base tracking-wide text-white/55">
         » ROUND #{current ? current.index + 1 : "—"} · the same song is on every radio right now «
       </p>
 
@@ -148,9 +146,9 @@ export default function App() {
 
 function NewsTicker() {
   const text =
-    "★ WELCOME TO RADIOGUESSR 98.7 FM ★ THE #1 NAME-THAT-TUNE STATION ON THE WORLD WIDE WEB ★ NOW WITH 100% MORE SOUND ★ SIGN OUR GUESTBOOK ★ TELL A FRIEND ★";
+    "★ WELCOME TO MIXTAPE 98.7 FM ★ THE #1 NAME-THAT-TUNE STATION ON THE WORLD WIDE WEB ★ NOW WITH 100% MORE SOUND ★ SIGN OUR GUESTBOOK ★ TELL A FRIEND ★";
   return (
-    <div className="bevel-in mb-2 overflow-hidden bg-black px-0 py-1" style={{ background: "#07140a" }}>
+    <div className="bevel-in overflow-hidden px-0 py-1" style={{ background: "#07140a" }}>
       <div className="marquee marquee-fast lcd text-base">{text}</div>
     </div>
   );
@@ -179,25 +177,28 @@ function SiteBanner({
       >
         <span className="lcd text-3xl leading-none">((•))</span>
         <div className="leading-none">
-          <div className="rainbow font-display text-[15px] leading-none">RadioGuessr</div>
+          <div className="rainbow font-display text-lg leading-none">MIXTAPE</div>
           <div className="lcd mt-2 text-[13px] leading-none tracking-[0.12em]">
             98.7 FM · NAME THAT TUNE
           </div>
         </div>
       </div>
 
-      <div className="ml-auto flex flex-wrap items-center gap-1.5">
+      <div className="ml-auto flex flex-wrap items-stretch gap-1.5">
         <OnAir status={status} />
         <Readout label="TUNED IN" value={listeners} />
         {streak > 0 && <Readout label="STREAK" value={streak} amber />}
         <button
-          className="btn95 px-2.5 py-1.5 text-base leading-none"
+          className="btn95 flex items-center justify-center px-3 text-base leading-none"
           onClick={onToggleMute}
           title={muted ? "Sound off" : "Sound on"}
         >
           <span>{muted ? "♪̶ OFF" : "♪ ON"}</span>
         </button>
-        <button className="btn95 px-2.5 py-1.5 leading-none" onClick={onShowStats}>
+        <button
+          className="btn95 flex items-center justify-center px-3 leading-none"
+          onClick={onShowStats}
+        >
           <span className="font-display text-[9px]">STATS</span>
         </button>
       </div>
@@ -248,10 +249,10 @@ function PlayerPanel({
 }) {
   const pct = Math.min(100, Math.max(0, progress * 100));
   return (
-    <section className="bevel-out mt-2 p-1">
+    <section className="bevel-out p-1">
       {/* Title bar */}
       <div className="titlebar flex items-center justify-between px-2 py-1 text-[15px] leading-none">
-        <span className="truncate">♪ RadioGuessr — NowPlaying.mp3</span>
+        <span className="truncate">♪ Mixtape — SIDE-A.mp3</span>
         <span className="flex gap-1">
           {["_", "□", "×"].map((c, i) => (
             <span
@@ -265,11 +266,11 @@ function PlayerPanel({
       </div>
 
       {/* Body */}
-      <div className="flex gap-2 p-2">
-        {/* Album / mystery well */}
+      <div className="flex gap-2 px-2 pt-2">
+        {/* Cassette / album well */}
         <div
           key={phase === "reveal" ? "reveal" : "wait"}
-          className={`bevel-in scanlines grid h-[92px] w-[92px] shrink-0 place-items-center overflow-hidden ${
+          className={`bevel-in scanlines grid h-24 w-24 shrink-0 place-items-center overflow-hidden ${
             phase === "reveal" ? "flip-in" : ""
           }`}
           style={{ background: "#07140a" }}
@@ -279,12 +280,12 @@ function PlayerPanel({
           ) : phase === "reveal" ? (
             <span className="lcd text-5xl">♪</span>
           ) : (
-            <span className="lcd blink text-6xl">?</span>
+            <CassetteIcon spinning={playing} />
           )}
         </div>
 
         {/* Readouts */}
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex h-24 min-w-0 flex-1 flex-col gap-2">
           <div className="flex items-stretch gap-2">
             {/* Big time */}
             <div
@@ -306,30 +307,77 @@ function PlayerPanel({
           </div>
 
           {/* Spectrum analyzer */}
-          <div className="mt-2 h-9">
+          <div className="min-h-0 flex-1">
             <Equalizer playing={playing} />
-          </div>
-
-          {/* Seek bar */}
-          <div
-            className="bevel-in scanlines relative mt-2 h-4 overflow-hidden"
-            style={{ background: "#07140a" }}
-          >
-            <div
-              className="absolute inset-y-0 left-0"
-              style={{
-                width: `${pct}%`,
-                background: "linear-gradient(to right, #1f8f3a, #36ff7a)",
-              }}
-            />
-            <div
-              className="bevel-out absolute top-1/2 h-5 w-2.5 -translate-y-1/2"
-              style={{ left: `calc(${pct}% - 5px)` }}
-            />
           </div>
         </div>
       </div>
+
+      {/* Full-width seek bar */}
+      <div className="px-2 pb-2 pt-2">
+        <div
+          className="bevel-in scanlines relative h-4 overflow-hidden"
+          style={{ background: "#07140a" }}
+        >
+          <div
+            className="absolute inset-y-0 left-0"
+            style={{
+              width: `${pct}%`,
+              background: "linear-gradient(to right, #1f8f3a, #36ff7a)",
+            }}
+          />
+          <div
+            className="bevel-out absolute top-1/2 h-5 w-2.5 -translate-y-1/2"
+            style={{ left: `calc(${pct}% - 5px)` }}
+          />
+        </div>
+      </div>
     </section>
+  );
+}
+
+function CassetteIcon({ spinning }: { spinning: boolean }) {
+  const reel = (cx: number) => (
+    <g
+      style={{
+        transformBox: "fill-box",
+        transformOrigin: "center",
+        animation: spinning ? "spin-slow 2.4s linear infinite" : "none",
+      }}
+    >
+      <circle cx={cx} cy={52} r={11} />
+      <line x1={cx - 11} y1={52} x2={cx + 11} y2={52} />
+      <line x1={cx} y1={41} x2={cx} y2={63} />
+      <circle cx={cx} cy={52} r={3} fill="#36ff7a" stroke="none" />
+    </g>
+  );
+  return (
+    <svg
+      viewBox="0 0 120 80"
+      className="h-[78%] w-[82%]"
+      fill="none"
+      stroke="#36ff7a"
+      strokeWidth={3}
+      strokeLinecap="round"
+      style={{ filter: "drop-shadow(0 0 3px rgba(54,255,122,0.65))" }}
+    >
+      <rect x={3} y={3} width={114} height={74} rx={7} />
+      <rect x={22} y={11} width={76} height={20} rx={3} />
+      <text
+        x={60}
+        y={26}
+        textAnchor="middle"
+        fontSize={13}
+        fill="#36ff7a"
+        stroke="none"
+        style={{ fontFamily: "VT323, monospace", letterSpacing: "0.15em" }}
+      >
+        SIDE A
+      </text>
+      {reel(44)}
+      {reel(76)}
+      <line x1={55} y1={52} x2={65} y2={52} />
+    </svg>
   );
 }
 
@@ -346,7 +394,7 @@ function Footer({
 }) {
   const sync = status !== "open" ? "OFFLINE" : rtt < 120 ? "EXCELLENT" : "OK";
   return (
-    <footer className="mt-5 space-y-2 text-center text-base text-white/55">
+    <footer className="space-y-2 pt-1 text-center text-base text-white/55">
       <div className="tracking-wide">
         «{" "}
         <a className="text-cyan-300 underline hover:text-cyan-200" href="#" onClick={(e) => e.preventDefault()}>
@@ -378,7 +426,7 @@ function Footer({
         SIGNAL: {sync} · {listeners} tuned in · best viewed in Netscape Navigator 4.0 @ 800×600
       </div>
       <div className="text-sm text-white/35">
-        ★ Made with Notepad ★ © 2003 RadioGuessr ★ This page is under construction ★
+        ★ Made with Notepad ★ © 2003 Mixtape ★ This page is under construction ★
       </div>
     </footer>
   );
@@ -393,15 +441,17 @@ function ArmOverlay({ onArm, visitorNo }: { onArm: () => void; visitorNo: number
     >
       <div className="bevel-out w-full max-w-sm p-1 text-black" onClick={(e) => e.stopPropagation()}>
         <div className="titlebar flex items-center justify-between px-2 py-1 text-sm leading-none">
-          <span>★ Welcome — RadioGuessr.html</span>
+          <span>★ Welcome — Mixtape.html</span>
           <span className="bevel-out grid h-4 w-4 place-items-center text-[10px] text-black">×</span>
         </div>
         <div className="px-5 py-6 text-center">
           <div className="text-5xl" style={{ animation: "bob 3s ease-in-out infinite" }}>
             📻
           </div>
-          <div className="rainbow font-display mt-4 text-2xl leading-none">RadioGuessr</div>
-          <div className="font-display mt-2 text-[10px] tracking-widest text-black/60">98.7 FM</div>
+          <div className="rainbow font-display mt-4 text-3xl leading-none">MIXTAPE</div>
+          <div className="font-display mt-3 text-[10px] tracking-widest text-black/60">
+            98.7 FM · SIDE A
+          </div>
 
           <div className="bevel-in mt-5 overflow-hidden py-1.5" style={{ background: "#07140a" }}>
             <span className="marquee lcd text-base">

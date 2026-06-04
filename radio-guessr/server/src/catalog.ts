@@ -98,7 +98,7 @@ function demoCatalog(publicDir: string): Track[] {
     id: tone.id,
     title: tone.title,
     artist: tone.artist,
-    album: "RadioGuessr Demo",
+    album: "Mixtape Demo",
     genre: "Demo",
     previewUrl: `/demo/${tone.id}.wav`,
     artworkUrl: undefined,

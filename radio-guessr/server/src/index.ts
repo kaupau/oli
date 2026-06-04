@@ -1,4 +1,4 @@
-// RadioGuessr server: serves the built client + demo audio over HTTP and runs
+// Mixtape server: serves the built client + demo audio over HTTP and runs
 // the synchronized radio over a WebSocket. Single source of truth for timing,
 // the correct answer, and the live vote tally.
 
@@ -21,7 +21,7 @@ const publicDir = join(__dirname, "..", "public");
 const clientDist = join(__dirname, "..", "..", "client", "dist");
 
 async function main() {
-  console.log("RadioGuessr starting...");
+  console.log("Mixtape starting...");
   const { tracks, mode } = await buildCatalog(publicDir);
   console.log(`  mode: ${mode} | ${tracks.length} tracks | round = ${LISTEN_MS}ms listen + ${REVEAL_MS}ms reveal`);
 

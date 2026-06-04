@@ -1,4 +1,4 @@
-# 📻 RadioGuessr
+# 📻 Mixtape
 
 A live, **Wordle-meets-radio** song guessing game. A short clip plays for
 **everyone on the site at the same moment**, and you pick the right track from
