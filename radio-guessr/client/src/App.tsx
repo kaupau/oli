@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRadio } from "./lib/ws";
 import { useSyncedAudio } from "./lib/audio";
 import { useStats } from "./lib/stats";
+import { burstConfetti } from "./lib/confetti";
 import { Equalizer } from "./components/Equalizer";
 import { Choices } from "./components/Choices";
 import { StatsModal } from "./components/StatsModal";
@@ -65,7 +66,9 @@ export default function App() {
     if (scoredRef.current === reveal.roundId) return;
     if (myChoice && myChoice.roundId === reveal.roundId) {
       scoredRef.current = reveal.roundId;
-      record(myChoice.choiceId === reveal.correctChoiceId);
+      const correct = myChoice.choiceId === reveal.correctChoiceId;
+      record(correct);
+      if (correct) burstConfetti();
     }
   }, [reveal, myChoice, record]);
 

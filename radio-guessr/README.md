@@ -49,6 +49,23 @@ npm run preview    # builds the client, builds + starts the server on :8787
 
 The server serves the built client, so a single process runs the whole thing.
 
+## Deploy (play it on a real URL)
+
+There's a single-image `Dockerfile` that builds the client + server and runs
+one process. Any Docker host works:
+
+```bash
+docker build -t radio-guessr .
+docker run -p 8787:8787 radio-guessr
+# open http://localhost:8787
+```
+
+- **Render / Railway / Fly.io / Cloud Run:** point them at this folder's
+  `Dockerfile`. They inject `PORT`, which the server reads automatically.
+- WebSockets work out of the box on all of the above.
+- On a host with normal internet you'll get **real songs from iTunes**; with no
+  egress it falls back to demo tones.
+
 ## Configuration
 
 Environment variables (server):
