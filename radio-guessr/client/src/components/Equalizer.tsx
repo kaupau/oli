@@ -1,25 +1,23 @@
-// Classic media-player spectrum analyzer: green->yellow->red bars in an LCD
-// well. Freezes when audio isn't playing.
+// A quiet row of thin bars that breathe while audio plays, and rest flat
+// when it's not. One accent color — no traffic-light gradient.
 
 export function Equalizer({ playing }: { playing: boolean }) {
-  const bars = Array.from({ length: 14 }, (_, i) => i);
+  const bars = Array.from({ length: 28 }, (_, i) => i);
   return (
-    <div className="bevel-in scanlines flex h-full items-end gap-[2px] bg-[#07140a] p-1">
+    <div className="flex h-9 w-full items-end gap-[3px]">
       {bars.map((i) => (
         <span
           key={i}
-          className="flex-1"
+          className="flex-1 rounded-full"
           style={{
             height: "100%",
             transformOrigin: "bottom",
-            background:
-              "linear-gradient(to top, #2bff5e 0%, #2bff5e 45%, #ffe23a 70%, #ff5a3a 100%)",
-            imageRendering: "pixelated",
+            background: "var(--accent)",
+            opacity: playing ? 0.75 : 0.28,
+            transform: playing ? undefined : "scaleY(0.18)",
             animation: playing
-              ? `eq ${0.55 + ((i * 7) % 5) * 0.13}s ease-in-out ${(i % 6) * 0.06}s infinite`
+              ? `eq ${0.7 + ((i * 7) % 5) * 0.16}s ease-in-out ${(i % 7) * 0.07}s infinite`
               : "none",
-            transform: playing ? undefined : "scaleY(0.12)",
-            opacity: playing ? 1 : 0.4,
           }}
         />
       ))}

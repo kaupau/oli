@@ -1,8 +1,8 @@
 // Tiny dependency-free confetti burst. Spawns a full-screen canvas, rains
 // colored particles with gravity for ~1.4s, then removes itself.
 
-// Bright web-safe palette to match the retro vibe.
-const COLORS = ["#ff2d95", "#ffd400", "#2dff6a", "#2dd4ff", "#b22dff", "#ff7a00"];
+// Warm amber-toned palette to match the accent.
+const COLORS = ["#e9a23c", "#f3c177", "#c8772a", "#ece8e1", "#b9863a"];
 
 type P = {
   x: number;
@@ -15,7 +15,7 @@ type P = {
   color: string;
 };
 
-export function burstConfetti(count = 140) {
+export function burstConfetti(count = 90) {
   if (typeof document === "undefined") return;
 
   const canvas = document.createElement("canvas");

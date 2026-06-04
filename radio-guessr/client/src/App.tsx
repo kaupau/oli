@@ -18,7 +18,6 @@ export default function App() {
   const [showStats, setShowStats] = useState(false);
   const [myChoice, setMyChoice] = useState<{ roundId: string; choiceId: string } | null>(null);
   const scoredRef = useRef<string | null>(null);
-  const [visitorNo] = useState(() => 31000 + Math.floor(Math.random() * 9000));
 
   // Re-render at ~10fps to drive the countdown smoothly.
   const [, setTick] = useState(0);
@@ -83,22 +82,12 @@ export default function App() {
     reveal && current ? current.choices.find((c) => c.id === reveal.correctChoiceId) : null;
   const wasCorrect = reveal && myChoiceId ? myChoiceId === reveal.correctChoiceId : null;
 
-  // Marquee + readout text per phase.
   const mm = Math.floor(secondsLeft / 60);
   const timeStr = `${mm}:${String(secondsLeft % 60).padStart(2, "0")}`;
-  const tickerText =
-    phase === "reveal" && correctChoice
-      ? `♪ NOW PLAYING:  ${correctChoice.title.toUpperCase()} — ${correctChoice.artist.toUpperCase()}${
-          reveal?.album ? `  ·  ${reveal.album.toUpperCase()}` : ""
-        }  ♪   ${myChoiceId ? (wasCorrect ? "*** YOU GOT IT! ***" : "*** BETTER LUCK NEXT TIME ***") : ""}`
-      : phase === "preroll"
-        ? "GET READY...  NEXT TRACK STARTING SOON  ►►►  TURN UP YOUR SPEAKERS"
-        : "◄◄  NAME THAT TUNE — IS IT A, B, C OR D ?  ◄◄  GUESS BEFORE THE TIMER HITS ZERO  ►►►";
 
   return (
-    <div className="mx-auto flex w-full max-w-[600px] flex-col gap-3 px-3 py-4">
-      <NewsTicker />
-      <SiteBanner
+    <div className="mx-auto flex w-full max-w-[460px] flex-col gap-7 px-5 py-9 sm:py-12">
+      <Header
         listeners={radio.listeners}
         streak={stats.currentStreak}
         status={radio.status}
@@ -107,13 +96,16 @@ export default function App() {
         onShowStats={() => setShowStats(true)}
       />
 
-      <PlayerPanel
+      <Player
         phase={phase}
         timeStr={timeStr}
-        tickerText={tickerText}
         progress={progress}
         playing={playing && !muted}
-        artworkUrl={phase === "reveal" ? reveal?.artworkUrl : undefined}
+        title={correctChoice?.title}
+        artist={correctChoice?.artist}
+        artworkUrl={reveal?.artworkUrl}
+        wasCorrect={wasCorrect}
+        guessed={myChoiceId !== null}
       />
 
       {current ? (
@@ -125,18 +117,12 @@ export default function App() {
           onPick={pick}
         />
       ) : (
-        <div className="bevel-in p-4 text-center text-black">
-          <span className="lcd lcd-amber blink">CONNECTING TO STATION…</span>
-        </div>
+        <div className="panel px-4 py-8 text-center muted">Connecting to the station…</div>
       )}
 
-      <p className="text-center text-base tracking-wide text-white/55">
-        » ROUND #{current ? current.index + 1 : "—"} · the same song is on every radio right now «
-      </p>
+      <FooterMini roundIndex={current ? current.index + 1 : null} />
 
-      <Footer visitorNo={visitorNo} listeners={radio.listeners} rtt={radio.rtt} status={radio.status} />
-
-      {!armed && current && <ArmOverlay onArm={arm} visitorNo={visitorNo} />}
+      {!armed && current && <ArmOverlay onArm={arm} />}
       {showStats && <StatsModal stats={stats} onClose={() => setShowStats(false)} />}
     </div>
   );
@@ -144,17 +130,15 @@ export default function App() {
 
 /* ----------------------------------------------------------------- */
 
-function NewsTicker() {
-  const text =
-    "★ WELCOME TO MIXTAPE 98.7 FM ★ THE #1 NAME-THAT-TUNE STATION ON THE WORLD WIDE WEB ★ NOW WITH 100% MORE SOUND ★ SIGN OUR GUESTBOOK ★ TELL A FRIEND ★";
+function Wordmark({ className = "" }: { className?: string }) {
   return (
-    <div className="bevel-in overflow-hidden px-0 py-1" style={{ background: "#07140a" }}>
-      <div className="marquee marquee-fast lcd text-base">{text}</div>
-    </div>
+    <span className={`font-semibold ${className}`} style={{ letterSpacing: "0.3em" }}>
+      MIXTAPE
+    </span>
   );
 }
 
-function SiteBanner({
+function Header({
   listeners,
   streak,
   status,
@@ -169,309 +153,140 @@ function SiteBanner({
   onToggleMute: () => void;
   onShowStats: () => void;
 }) {
+  const live = status === "open";
   return (
-    <header className="bevel-out flex flex-wrap items-center gap-3 p-2">
-      <div
-        className="bevel-in scanlines flex items-center gap-2.5 px-2.5 py-1.5"
-        style={{ background: "#07140a" }}
-      >
-        <span className="lcd text-3xl leading-none">((•))</span>
-        <div className="leading-none">
-          <div className="rainbow font-display text-lg leading-none">MIXTAPE</div>
-          <div className="lcd mt-2 text-[13px] leading-none tracking-[0.12em]">
-            98.7 FM · NAME THAT TUNE
-          </div>
-        </div>
+    <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+      <div>
+        <Wordmark className="text-[15px]" />
+        <div className="label mt-1.5">98.7 FM</div>
       </div>
-
-      <div className="ml-auto flex flex-wrap items-stretch gap-1.5">
-        <OnAir status={status} />
-        <Readout label="TUNED IN" value={listeners} />
-        {streak > 0 && <Readout label="STREAK" value={streak} amber />}
-        <button
-          className="btn95 flex items-center justify-center px-3 text-base leading-none"
-          onClick={onToggleMute}
-          title={muted ? "Sound off" : "Sound on"}
-        >
-          <span>{muted ? "♪̶ OFF" : "♪ ON"}</span>
+      <div className="flex items-center gap-2 text-xs">
+        <span className="muted flex items-center gap-1.5">
+          <span
+            className={`h-1.5 w-1.5 rounded-full ${live ? "pulse" : ""}`}
+            style={{ background: live ? "var(--accent)" : "var(--faint)" }}
+          />
+          {live ? "Live" : "Off air"}
+        </span>
+        <span className="muted">· {listeners} listening</span>
+        {streak > 0 && <span className="accent">· streak {streak}</span>}
+        <button className="btn-ghost ml-1 px-2.5 py-1" onClick={onToggleMute}>
+          {muted ? "Muted" : "Sound"}
         </button>
-        <button
-          className="btn95 flex items-center justify-center px-3 leading-none"
-          onClick={onShowStats}
-        >
-          <span className="font-display text-[9px]">STATS</span>
+        <button className="btn-ghost px-2.5 py-1" onClick={onShowStats}>
+          Stats
         </button>
       </div>
     </header>
   );
 }
 
-function OnAir({ status }: { status: string }) {
-  const live = status === "open";
-  return (
-    <div className="bevel-in flex items-center gap-1.5 px-2 py-1" style={{ background: "#07140a" }}>
-      <span
-        className={`h-2.5 w-2.5 rounded-full ${live ? "blink bg-red-500" : "bg-zinc-600"}`}
-        style={live ? { boxShadow: "0 0 6px 1px #ff2d2d" } : undefined}
-      />
-      <span className={`lcd lcd-amber font-display text-[9px] ${live ? "" : "opacity-60"}`}>
-        {live ? "ON AIR" : "…"}
-      </span>
-    </div>
-  );
-}
-
-function Readout({ label, value, amber }: { label: string; value: number; amber?: boolean }) {
-  return (
-    <div className="bevel-in px-2 py-1 text-center" style={{ background: "#07140a" }}>
-      <div className="font-display text-[6px] leading-none text-white/40">{label}</div>
-      <div className={`lcd ${amber ? "lcd-amber" : ""} mt-1 text-lg leading-none tabular-nums`}>
-        {String(value).padStart(4, "0")}
-      </div>
-    </div>
-  );
-}
-
-function PlayerPanel({
+function Player({
   phase,
   timeStr,
-  tickerText,
   progress,
   playing,
+  title,
+  artist,
   artworkUrl,
+  wasCorrect,
+  guessed,
 }: {
   phase: Phase;
   timeStr: string;
-  tickerText: string;
   progress: number;
   playing: boolean;
+  title?: string;
+  artist?: string;
   artworkUrl?: string;
+  wasCorrect: boolean | null;
+  guessed: boolean;
 }) {
   const pct = Math.min(100, Math.max(0, progress * 100));
+  const heading =
+    phase === "reveal" ? "Now playing" : phase === "preroll" ? "Get ready" : "Guess the track";
+  const timerLabel = phase === "reveal" ? "Next in" : phase === "preroll" ? "Starts in" : "Time left";
+
   return (
-    <section className="bevel-out p-1">
-      {/* Title bar */}
-      <div className="titlebar flex items-center justify-between px-2 py-1 text-[15px] leading-none">
-        <span className="truncate">♪ Mixtape — SIDE-A.mp3</span>
-        <span className="flex gap-1">
-          {["_", "□", "×"].map((c, i) => (
-            <span
-              key={i}
-              className="bevel-out grid h-4 w-4 place-items-center text-[10px] leading-none text-black"
-            >
-              {c}
-            </span>
-          ))}
-        </span>
-      </div>
-
-      {/* Body */}
-      <div className="flex gap-2 px-2 pt-2">
-        {/* Cassette / album well */}
-        <div
-          key={phase === "reveal" ? "reveal" : "wait"}
-          className={`bevel-in scanlines grid h-24 w-24 shrink-0 place-items-center overflow-hidden ${
-            phase === "reveal" ? "flip-in" : ""
-          }`}
-          style={{ background: "#07140a" }}
-        >
-          {phase === "reveal" && artworkUrl ? (
-            <img src={artworkUrl} alt="" className="h-full w-full object-cover" />
-          ) : phase === "reveal" ? (
-            <span className="lcd text-5xl">♪</span>
-          ) : (
-            <CassetteIcon spinning={playing} />
-          )}
-        </div>
-
-        {/* Readouts */}
-        <div className="flex h-24 min-w-0 flex-1 flex-col gap-2">
-          <div className="flex items-stretch gap-2">
-            {/* Big time */}
-            <div
-              className="bevel-in scanlines flex flex-col justify-center px-2.5 py-1 text-center"
-              style={{ background: "#07140a" }}
-            >
-              <span className="font-display text-[6px] leading-none text-white/40">
-                {phase === "reveal" ? "NEXT IN" : "TIME"}
-              </span>
-              <span className="lcd mt-1 text-3xl tabular-nums leading-none">{timeStr}</span>
-            </div>
-            {/* Scrolling track marquee */}
-            <div
-              className="bevel-in scanlines flex flex-1 items-center overflow-hidden px-1"
-              style={{ background: "#07140a" }}
-            >
-              <span className="marquee lcd text-lg">{tickerText}</span>
-            </div>
-          </div>
-
-          {/* Spectrum analyzer */}
-          <div className="min-h-0 flex-1">
-            <Equalizer playing={playing} />
-          </div>
+    <section className="panel flex flex-col gap-5 p-6">
+      <div className="flex items-start justify-between gap-4">
+        <div className="label pt-1">{heading}</div>
+        <div className="text-right leading-none">
+          <div className="label">{timerLabel}</div>
+          <div className="accent tnum mt-1.5 text-[30px] font-semibold leading-none">{timeStr}</div>
         </div>
       </div>
 
-      {/* Full-width seek bar */}
-      <div className="px-2 pb-2 pt-2">
-        <div
-          className="bevel-in scanlines relative h-4 overflow-hidden"
-          style={{ background: "#07140a" }}
-        >
-          <div
-            className="absolute inset-y-0 left-0"
-            style={{
-              width: `${pct}%`,
-              background: "linear-gradient(to right, #1f8f3a, #36ff7a)",
-            }}
-          />
-          <div
-            className="bevel-out absolute top-1/2 h-5 w-2.5 -translate-y-1/2"
-            style={{ left: `calc(${pct}% - 5px)` }}
-          />
-        </div>
+      {/* Center: spectrum while listening, the revealed track on reveal. */}
+      <div className="flex min-h-[52px] items-center">
+        {phase === "reveal" ? (
+          <div key={title} className="fade-up flex w-full items-center gap-3">
+            {artworkUrl ? (
+              <img src={artworkUrl} alt="" className="h-12 w-12 rounded-md object-cover" />
+            ) : (
+              <div
+                className="accent grid h-12 w-12 place-items-center rounded-md text-lg"
+                style={{ background: "var(--surface-2)" }}
+              >
+                ♪
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[15px]">{title ?? "—"}</div>
+              <div className="muted truncate text-xs">{artist}</div>
+            </div>
+            <div className="shrink-0 text-xs">
+              {guessed ? (
+                wasCorrect ? (
+                  <span className="accent">✓ You got it</span>
+                ) : (
+                  <span className="bad">✗ Missed</span>
+                )
+              ) : (
+                <span className="faint">no guess</span>
+              )}
+            </div>
+          </div>
+        ) : (
+          <Equalizer playing={playing} />
+        )}
+      </div>
+
+      <div className="track">
+        <span style={{ width: `${pct}%` }} />
       </div>
     </section>
   );
 }
 
-function CassetteIcon({ spinning }: { spinning: boolean }) {
-  const reel = (cx: number) => (
-    <g
-      style={{
-        transformBox: "fill-box",
-        transformOrigin: "center",
-        animation: spinning ? "spin-slow 2.4s linear infinite" : "none",
-      }}
-    >
-      <circle cx={cx} cy={52} r={11} />
-      <line x1={cx - 11} y1={52} x2={cx + 11} y2={52} />
-      <line x1={cx} y1={41} x2={cx} y2={63} />
-      <circle cx={cx} cy={52} r={3} fill="#36ff7a" stroke="none" />
-    </g>
-  );
+function FooterMini({ roundIndex }: { roundIndex: number | null }) {
   return (
-    <svg
-      viewBox="0 0 120 80"
-      className="h-[78%] w-[82%]"
-      fill="none"
-      stroke="#36ff7a"
-      strokeWidth={3}
-      strokeLinecap="round"
-      style={{ filter: "drop-shadow(0 0 3px rgba(54,255,122,0.65))" }}
-    >
-      <rect x={3} y={3} width={114} height={74} rx={7} />
-      <rect x={22} y={11} width={76} height={20} rx={3} />
-      <text
-        x={60}
-        y={26}
-        textAnchor="middle"
-        fontSize={13}
-        fill="#36ff7a"
-        stroke="none"
-        style={{ fontFamily: "VT323, monospace", letterSpacing: "0.15em" }}
-      >
-        SIDE A
-      </text>
-      {reel(44)}
-      {reel(76)}
-      <line x1={55} y1={52} x2={65} y2={52} />
-    </svg>
-  );
-}
-
-function Footer({
-  visitorNo,
-  listeners,
-  rtt,
-  status,
-}: {
-  visitorNo: number;
-  listeners: number;
-  rtt: number;
-  status: string;
-}) {
-  const sync = status !== "open" ? "OFFLINE" : rtt < 120 ? "EXCELLENT" : "OK";
-  return (
-    <footer className="space-y-2 pt-1 text-center text-base text-white/55">
-      <div className="tracking-wide">
-        «{" "}
-        <a className="text-cyan-300 underline hover:text-cyan-200" href="#" onClick={(e) => e.preventDefault()}>
-          PREV
-        </a>{" "}
-        |{" "}
-        <a className="text-cyan-300 underline hover:text-cyan-200" href="#" onClick={(e) => e.preventDefault()}>
-          RANDOM STATION
-        </a>{" "}
-        |{" "}
-        <a className="text-cyan-300 underline hover:text-cyan-200" href="#" onClick={(e) => e.preventDefault()}>
-          NEXT
-        </a>{" "}
-        »
-      </div>
-
-      <div className="flex items-center justify-center gap-2">
-        <span>You are listener #</span>
-        <span className="bevel-in inline-flex gap-px px-1 py-0.5" style={{ background: "#07140a" }}>
-          {String(visitorNo).padStart(6, "0").split("").map((d, i) => (
-            <span key={i} className="lcd px-1 text-base leading-none tabular-nums">
-              {d}
-            </span>
-          ))}
-        </span>
-      </div>
-
-      <div className="text-sm text-white/40">
-        SIGNAL: {sync} · {listeners} tuned in · best viewed in Netscape Navigator 4.0 @ 800×600
-      </div>
-      <div className="text-sm text-white/35">
-        ★ Made with Notepad ★ © 2003 Mixtape ★ This page is under construction ★
-      </div>
+    <footer className="text-center text-xs muted">
+      Round {roundIndex ?? "—"} · the same song plays for everyone, everywhere.
     </footer>
   );
 }
 
-function ArmOverlay({ onArm, visitorNo }: { onArm: () => void; visitorNo: number }) {
+function ArmOverlay({ onArm }: { onArm: () => void }) {
   return (
     <div
-      className="fixed inset-0 z-40 grid place-items-center px-4"
-      style={{ background: "rgba(5,5,15,0.82)", backdropFilter: "blur(2px)" }}
+      className="fixed inset-0 z-40 grid place-items-center px-6"
+      style={{ background: "rgba(10,9,7,0.78)", backdropFilter: "blur(4px)" }}
       onClick={onArm}
     >
-      <div className="bevel-out w-full max-w-sm p-1 text-black" onClick={(e) => e.stopPropagation()}>
-        <div className="titlebar flex items-center justify-between px-2 py-1 text-sm leading-none">
-          <span>★ Welcome — Mixtape.html</span>
-          <span className="bevel-out grid h-4 w-4 place-items-center text-[10px] text-black">×</span>
-        </div>
-        <div className="px-5 py-6 text-center">
-          <div className="text-5xl" style={{ animation: "bob 3s ease-in-out infinite" }}>
-            📻
-          </div>
-          <div className="rainbow font-display mt-4 text-3xl leading-none">MIXTAPE</div>
-          <div className="font-display mt-3 text-[10px] tracking-widest text-black/60">
-            98.7 FM · SIDE A
-          </div>
-
-          <div className="bevel-in mt-5 overflow-hidden py-1.5" style={{ background: "#07140a" }}>
-            <span className="marquee lcd text-base">
-              ♪ A SHORT CLIP PLAYS FOR EVERYONE AT ONCE — GUESS THE TRACK BEFORE TIME RUNS OUT ♪
-            </span>
-          </div>
-
-          <p className="mt-5 text-lg leading-tight text-black/80">
-            ⚠ This site plays <b>AUDIO</b>. Please turn your speakers <b>ON</b>.
-          </p>
-
-          <button onClick={onArm} className="btn95 mt-5 px-7 py-4">
-            <span className="font-display text-sm leading-none">► ENTER SITE ◄</span>
-          </button>
-
-          <p className="mt-5 text-base leading-tight text-black/50">
-            You are visitor #{String(visitorNo).padStart(6, "0")}
-            <br />tip: open in two tabs to feel the sync
-          </p>
-        </div>
+      <div
+        className="panel fade-up w-full max-w-sm p-8 text-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <Wordmark className="text-xl" />
+        <div className="label mt-2">98.7 FM</div>
+        <p className="mt-6 text-sm leading-relaxed">
+          A short clip plays for everyone at once. Guess the track before time runs out.
+        </p>
+        <p className="faint mt-3 text-xs">Plays audio — turn your sound on.</p>
+        <button onClick={onArm} className="btn-accent mt-7 w-full py-3 text-sm">
+          Enter
+        </button>
       </div>
     </div>
   );
