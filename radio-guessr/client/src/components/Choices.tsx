@@ -46,7 +46,9 @@ export function Choices({
             key={c.id}
             disabled={disabled}
             onClick={() => onPick(c.id)}
-            className={`btn95 ${pressed ? "is-pressed" : ""} relative overflow-hidden px-2 py-2 text-left ${
+            className={`btn95 ${pressed ? "is-pressed" : ""} ${
+              isCorrect ? "glow-pulse" : ""
+            } relative overflow-hidden px-2.5 py-2.5 text-left ${
               revealing && !isCorrect && !isWrongPick ? "opacity-70" : ""
             }`}
             style={
@@ -57,34 +59,32 @@ export function Choices({
                   : undefined
             }
           >
-            {/* Vote share fill on reveal */}
-            {revealing && (
+            {/* Vote-share fill — always present so it grows on reveal. */}
+            <span
+              className="absolute inset-y-0 left-0 z-0 transition-[width] duration-700 ease-out"
+              style={{
+                width: revealing ? `${pct}%` : "0%",
+                background: isCorrect ? "rgba(54,255,122,0.22)" : "rgba(0,0,0,0.12)",
+              }}
+            />
+            <span className="relative z-10 flex items-center gap-2.5 text-black">
               <span
-                className="absolute inset-y-0 left-0 z-0"
-                style={{
-                  width: `${pct}%`,
-                  background: isCorrect ? "rgba(54,255,122,0.20)" : "rgba(0,0,0,0.12)",
-                }}
-              />
-            )}
-            <span className="relative z-10 flex items-center gap-2 text-black">
-              <span
-                className={`grid h-8 w-8 shrink-0 place-items-center border border-black/40 font-mono text-base font-bold ${chip}`}
+                className={`grid h-8 w-8 shrink-0 place-items-center border border-black/40 font-display text-sm ${chip}`}
                 style={{ textShadow: "0 0 4px currentColor" }}
               >
                 {String.fromCharCode(65 + i)}
               </span>
               <span className="min-w-0 flex-1 leading-tight">
-                <span className="block truncate font-bold">{c.title}</span>
-                <span className="block truncate text-[11px] text-black/60">{c.artist}</span>
+                <span className="block truncate text-lg leading-tight">{c.title}</span>
+                <span className="block truncate text-sm leading-tight text-black/55">{c.artist}</span>
               </span>
               {revealing ? (
-                <span className="flex shrink-0 items-center gap-1 font-mono text-xs font-bold">
+                <span className="flex shrink-0 items-center gap-1 text-base">
                   {isCorrect ? "✓" : isWrongPick ? "✗" : ""}
                   {pct}%
                 </span>
               ) : isMine ? (
-                <span className="shrink-0 text-xs font-bold">◄ YOU</span>
+                <span className="font-display shrink-0 text-[8px]">◄YOU</span>
               ) : null}
             </span>
           </button>

@@ -132,7 +132,7 @@ export default function App() {
         )}
       </div>
 
-      <p className="mt-3 text-center text-[11px] tracking-wide text-white/55">
+      <p className="mt-3 text-center text-base tracking-wide text-white/55">
         » ROUND #{current ? current.index + 1 : "—"} · the same song is on every radio right now «
       </p>
 
@@ -151,7 +151,7 @@ function NewsTicker() {
     "★ WELCOME TO RADIOGUESSR 98.7 FM ★ THE #1 NAME-THAT-TUNE STATION ON THE WORLD WIDE WEB ★ NOW WITH 100% MORE SOUND ★ SIGN OUR GUESTBOOK ★ TELL A FRIEND ★";
   return (
     <div className="bevel-in mb-2 overflow-hidden bg-black px-0 py-1" style={{ background: "#07140a" }}>
-      <div className="marquee marquee-fast lcd text-[11px] font-bold">{text}</div>
+      <div className="marquee marquee-fast lcd text-base">{text}</div>
     </div>
   );
 }
@@ -177,10 +177,10 @@ function SiteBanner({
         className="bevel-in scanlines flex items-center gap-2.5 px-2.5 py-1.5"
         style={{ background: "#07140a" }}
       >
-        <span className="lcd text-2xl leading-none">((•))</span>
+        <span className="lcd text-3xl leading-none">((•))</span>
         <div className="leading-none">
-          <div className="rainbow text-2xl font-black tracking-tight">RadioGuessr</div>
-          <div className="lcd mt-1 text-[9px] font-bold tracking-[0.2em]">
+          <div className="rainbow font-display text-[15px] leading-none">RadioGuessr</div>
+          <div className="lcd mt-2 text-[13px] leading-none tracking-[0.12em]">
             98.7 FM · NAME THAT TUNE
           </div>
         </div>
@@ -191,14 +191,14 @@ function SiteBanner({
         <Readout label="TUNED IN" value={listeners} />
         {streak > 0 && <Readout label="STREAK" value={streak} amber />}
         <button
-          className="btn95 px-2 py-1 text-xs font-bold"
+          className="btn95 px-2.5 py-1.5 text-base leading-none"
           onClick={onToggleMute}
           title={muted ? "Sound off" : "Sound on"}
         >
           <span>{muted ? "♪̶ OFF" : "♪ ON"}</span>
         </button>
-        <button className="btn95 px-2 py-1 text-xs font-bold" onClick={onShowStats}>
-          <span>STATS</span>
+        <button className="btn95 px-2.5 py-1.5 leading-none" onClick={onShowStats}>
+          <span className="font-display text-[9px]">STATS</span>
         </button>
       </div>
     </header>
@@ -213,7 +213,7 @@ function OnAir({ status }: { status: string }) {
         className={`h-2.5 w-2.5 rounded-full ${live ? "blink bg-red-500" : "bg-zinc-600"}`}
         style={live ? { boxShadow: "0 0 6px 1px #ff2d2d" } : undefined}
       />
-      <span className={`lcd lcd-amber text-xs font-bold ${live ? "" : "opacity-60"}`}>
+      <span className={`lcd lcd-amber font-display text-[9px] ${live ? "" : "opacity-60"}`}>
         {live ? "ON AIR" : "…"}
       </span>
     </div>
@@ -222,9 +222,9 @@ function OnAir({ status }: { status: string }) {
 
 function Readout({ label, value, amber }: { label: string; value: number; amber?: boolean }) {
   return (
-    <div className="bevel-in px-1.5 py-0.5 text-center" style={{ background: "#07140a" }}>
-      <div className="text-[7px] font-bold tracking-widest text-white/35">{label}</div>
-      <div className={`lcd ${amber ? "lcd-amber" : ""} text-sm font-bold tabular-nums`}>
+    <div className="bevel-in px-2 py-1 text-center" style={{ background: "#07140a" }}>
+      <div className="font-display text-[6px] leading-none text-white/40">{label}</div>
+      <div className={`lcd ${amber ? "lcd-amber" : ""} mt-1 text-lg leading-none tabular-nums`}>
         {String(value).padStart(4, "0")}
       </div>
     </div>
@@ -250,13 +250,13 @@ function PlayerPanel({
   return (
     <section className="bevel-out mt-2 p-1">
       {/* Title bar */}
-      <div className="titlebar flex items-center justify-between px-2 py-0.5 text-[11px]">
-        <span className="truncate">♪ RadioGuessr — Now Playing.mp3</span>
-        <span className="flex gap-0.5">
+      <div className="titlebar flex items-center justify-between px-2 py-1 text-[15px] leading-none">
+        <span className="truncate">♪ RadioGuessr — NowPlaying.mp3</span>
+        <span className="flex gap-1">
           {["_", "□", "×"].map((c, i) => (
             <span
               key={i}
-              className="bevel-out grid h-4 w-4 place-items-center text-[9px] leading-none text-black"
+              className="bevel-out grid h-4 w-4 place-items-center text-[10px] leading-none text-black"
             >
               {c}
             </span>
@@ -268,15 +268,18 @@ function PlayerPanel({
       <div className="flex gap-2 p-2">
         {/* Album / mystery well */}
         <div
-          className="bevel-in scanlines grid h-[88px] w-[88px] shrink-0 place-items-center overflow-hidden"
+          key={phase === "reveal" ? "reveal" : "wait"}
+          className={`bevel-in scanlines grid h-[92px] w-[92px] shrink-0 place-items-center overflow-hidden ${
+            phase === "reveal" ? "flip-in" : ""
+          }`}
           style={{ background: "#07140a" }}
         >
           {phase === "reveal" && artworkUrl ? (
             <img src={artworkUrl} alt="" className="h-full w-full object-cover" />
           ) : phase === "reveal" ? (
-            <span className="lcd text-4xl">♪</span>
+            <span className="lcd text-5xl">♪</span>
           ) : (
-            <span className="lcd blink text-5xl font-black">?</span>
+            <span className="lcd blink text-6xl">?</span>
           )}
         </div>
 
@@ -285,20 +288,20 @@ function PlayerPanel({
           <div className="flex items-stretch gap-2">
             {/* Big time */}
             <div
-              className="bevel-in scanlines flex flex-col justify-center px-2 py-1 text-center"
+              className="bevel-in scanlines flex flex-col justify-center px-2.5 py-1 text-center"
               style={{ background: "#07140a" }}
             >
-              <span className="text-[7px] font-bold tracking-widest text-white/35">
+              <span className="font-display text-[6px] leading-none text-white/40">
                 {phase === "reveal" ? "NEXT IN" : "TIME"}
               </span>
-              <span className="lcd text-2xl font-bold tabular-nums leading-none">{timeStr}</span>
+              <span className="lcd mt-1 text-3xl tabular-nums leading-none">{timeStr}</span>
             </div>
             {/* Scrolling track marquee */}
             <div
               className="bevel-in scanlines flex flex-1 items-center overflow-hidden px-1"
               style={{ background: "#07140a" }}
             >
-              <span className="marquee lcd text-xs font-bold">{tickerText}</span>
+              <span className="marquee lcd text-lg">{tickerText}</span>
             </div>
           </div>
 
@@ -343,7 +346,7 @@ function Footer({
 }) {
   const sync = status !== "open" ? "OFFLINE" : rtt < 120 ? "EXCELLENT" : "OK";
   return (
-    <footer className="mt-5 space-y-2 text-center text-[11px] text-white/55">
+    <footer className="mt-5 space-y-2 text-center text-base text-white/55">
       <div className="tracking-wide">
         «{" "}
         <a className="text-cyan-300 underline hover:text-cyan-200" href="#" onClick={(e) => e.preventDefault()}>
@@ -364,17 +367,17 @@ function Footer({
         <span>You are listener #</span>
         <span className="bevel-in inline-flex gap-px px-1 py-0.5" style={{ background: "#07140a" }}>
           {String(visitorNo).padStart(6, "0").split("").map((d, i) => (
-            <span key={i} className="lcd px-0.5 text-xs font-bold tabular-nums">
+            <span key={i} className="lcd px-1 text-base leading-none tabular-nums">
               {d}
             </span>
           ))}
         </span>
       </div>
 
-      <div className="text-[10px] text-white/40">
+      <div className="text-sm text-white/40">
         SIGNAL: {sync} · {listeners} tuned in · best viewed in Netscape Navigator 4.0 @ 800×600
       </div>
-      <div className="text-[10px] text-white/35">
+      <div className="text-sm text-white/35">
         ★ Made with Notepad ★ © 2003 RadioGuessr ★ This page is under construction ★
       </div>
     </footer>
@@ -389,33 +392,34 @@ function ArmOverlay({ onArm, visitorNo }: { onArm: () => void; visitorNo: number
       onClick={onArm}
     >
       <div className="bevel-out w-full max-w-sm p-1 text-black" onClick={(e) => e.stopPropagation()}>
-        <div className="titlebar flex items-center justify-between px-2 py-0.5 text-[11px]">
+        <div className="titlebar flex items-center justify-between px-2 py-1 text-sm leading-none">
           <span>★ Welcome — RadioGuessr.html</span>
-          <span className="bevel-out grid h-4 w-4 place-items-center text-[9px] text-black">×</span>
+          <span className="bevel-out grid h-4 w-4 place-items-center text-[10px] text-black">×</span>
         </div>
         <div className="px-5 py-6 text-center">
           <div className="text-5xl" style={{ animation: "bob 3s ease-in-out infinite" }}>
             📻
           </div>
-          <div className="rainbow mt-2 text-4xl font-black tracking-tight">RadioGuessr</div>
-          <div className="text-xs font-bold tracking-widest text-black/70">98.7 FM</div>
+          <div className="rainbow font-display mt-4 text-2xl leading-none">RadioGuessr</div>
+          <div className="font-display mt-2 text-[10px] tracking-widest text-black/60">98.7 FM</div>
 
-          <div className="bevel-in mt-4 overflow-hidden py-1" style={{ background: "#07140a" }}>
-            <span className="marquee lcd text-[11px] font-bold">
+          <div className="bevel-in mt-5 overflow-hidden py-1.5" style={{ background: "#07140a" }}>
+            <span className="marquee lcd text-base">
               ♪ A SHORT CLIP PLAYS FOR EVERYONE AT ONCE — GUESS THE TRACK BEFORE TIME RUNS OUT ♪
             </span>
           </div>
 
-          <p className="mt-4 text-xs text-black/70">
+          <p className="mt-5 text-lg leading-tight text-black/80">
             ⚠ This site plays <b>AUDIO</b>. Please turn your speakers <b>ON</b>.
           </p>
 
-          <button onClick={onArm} className="btn95 mt-4 px-8 py-3 text-lg font-black">
-            <span>►  ENTER SITE  ◄</span>
+          <button onClick={onArm} className="btn95 mt-5 px-7 py-4">
+            <span className="font-display text-sm leading-none">► ENTER SITE ◄</span>
           </button>
 
-          <p className="mt-4 text-[10px] text-black/50">
-            You are visitor #{String(visitorNo).padStart(6, "0")} · tip: open in two tabs to feel the sync
+          <p className="mt-5 text-base leading-tight text-black/50">
+            You are visitor #{String(visitorNo).padStart(6, "0")}
+            <br />tip: open in two tabs to feel the sync
           </p>
         </div>
       </div>

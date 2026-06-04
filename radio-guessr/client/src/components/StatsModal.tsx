@@ -18,11 +18,11 @@ export function StatsModal({
     >
       <div className="bevel-out w-full max-w-md p-1 text-black" onClick={(e) => e.stopPropagation()}>
         {/* Title bar */}
-        <div className="titlebar flex items-center justify-between px-2 py-0.5 text-[11px]">
+        <div className="titlebar flex items-center justify-between px-2 py-1 text-sm leading-none">
           <span>📊 Your Stats — RadioGuessr</span>
           <button
             onClick={onClose}
-            className="bevel-out grid h-4 w-4 place-items-center text-[9px] font-bold text-black"
+            className="bevel-out grid h-4 w-4 place-items-center text-[10px] text-black"
           >
             ×
           </button>
@@ -38,7 +38,7 @@ export function StatsModal({
 
           {last.length > 0 && (
             <div className="mt-3">
-              <div className="mb-1 text-[10px] font-bold tracking-widest text-black/60">
+              <div className="font-display mb-1.5 text-[7px] tracking-widest text-black/60">
                 RECENT ROUNDS
               </div>
               <div
@@ -61,10 +61,10 @@ export function StatsModal({
             </div>
           )}
 
-          <div className="mt-3 flex items-center justify-between">
-            <span className="text-[10px] text-black/50">⌐ Saved on this computer only.</span>
-            <button onClick={onClose} className="btn95 px-5 py-1 text-sm font-bold">
-              <span>OK</span>
+          <div className="mt-4 flex items-center justify-between">
+            <span className="text-sm text-black/50">⌐ Saved on this computer only.</span>
+            <button onClick={onClose} className="btn95 px-6 py-1.5">
+              <span className="font-display text-[10px]">OK</span>
             </button>
           </div>
         </div>
@@ -84,8 +84,8 @@ function Stat({
 }) {
   return (
     <div className="bevel-in px-1 py-2 text-center" style={{ background: "#07140a" }}>
-      <div className={`lcd ${amber ? "lcd-amber" : ""} text-xl font-bold tabular-nums`}>{value}</div>
-      <div className="mt-0.5 text-[8px] font-bold tracking-widest text-white/40">{label}</div>
+      <div className={`lcd ${amber ? "lcd-amber" : ""} text-2xl leading-none tabular-nums`}>{value}</div>
+      <div className="font-display mt-1.5 text-[6px] tracking-widest text-white/45">{label}</div>
     </div>
   );
 }
