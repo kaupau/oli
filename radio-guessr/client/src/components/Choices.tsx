@@ -19,7 +19,7 @@ export function Choices({
   const total = reveal?.totalGuesses ?? 0;
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
       {choices.map((c, i) => {
         const isMine = myChoiceId === c.id;
         const isCorrect = revealing && reveal!.correctChoiceId === c.id;
@@ -27,14 +27,26 @@ export function Choices({
         const votes = reveal?.tally?.[c.id] ?? 0;
         const pct = total > 0 ? Math.round((votes / total) * 100) : 0;
 
+        // Base (light Notion card) + per-state styling.
         let cls =
-          "border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.06]";
+          "border-zinc-200 bg-white hover:border-violet-300 hover:shadow-md hover:-translate-y-0.5";
+        let badgeCls = "bg-zinc-100 text-zinc-500";
+        let corner = "";
         if (revealing) {
-          if (isCorrect) cls = "border-emerald-400/70 bg-emerald-400/10";
-          else if (isWrongPick) cls = "border-rose-400/70 bg-rose-400/10";
-          else cls = "border-white/5 bg-white/[0.02] opacity-70";
+          if (isCorrect) {
+            cls = "border-emerald-300 bg-emerald-50";
+            badgeCls = "bg-emerald-500 text-white";
+            corner = "✅";
+          } else if (isWrongPick) {
+            cls = "border-rose-300 bg-rose-50";
+            badgeCls = "bg-rose-500 text-white";
+            corner = "❌";
+          } else {
+            cls = "border-zinc-200 bg-white opacity-60";
+          }
         } else if (isMine) {
-          cls = "border-fuchsia-400/70 bg-fuchsia-400/10";
+          cls = "border-violet-400 bg-violet-50 shadow-sm";
+          badgeCls = "bg-violet-600 text-white";
         }
 
         return (
@@ -42,34 +54,35 @@ export function Choices({
             key={c.id}
             disabled={phase !== "listen" || (myChoiceId !== null && !isMine)}
             onClick={() => onPick(c.id)}
-            className={`group relative overflow-hidden rounded-xl border px-4 py-3 text-left transition-all disabled:cursor-default ${cls}`}
+            className={`group relative overflow-hidden rounded-2xl border px-3.5 py-3 text-left shadow-sm transition-all duration-150 disabled:cursor-default ${cls}`}
           >
-            {/* Vote share bar (reveal only). */}
+            {/* Vote share fill (reveal only). */}
             {revealing && (
               <span
-                className={`absolute inset-y-0 left-0 -z-0 transition-all duration-700 ${
-                  isCorrect ? "bg-emerald-400/15" : "bg-white/5"
+                className={`absolute inset-y-0 left-0 z-0 transition-all duration-700 ${
+                  isCorrect ? "bg-emerald-200/40" : "bg-zinc-200/40"
                 }`}
                 style={{ width: `${pct}%` }}
               />
             )}
             <div className="relative z-10 flex items-center gap-3">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white/10 text-xs font-bold text-white/60">
+              <span
+                className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg text-xs font-extrabold transition ${badgeCls}`}
+              >
                 {String.fromCharCode(65 + i)}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate font-semibold text-white">
-                  {c.title}
-                </span>
-                <span className="block truncate text-sm text-white/50">
-                  {c.artist}
-                </span>
+                <span className="block truncate font-bold text-zinc-800">{c.title}</span>
+                <span className="block truncate text-sm text-zinc-400">{c.artist}</span>
               </span>
-              {revealing && (
-                <span className="relative z-10 shrink-0 text-sm font-semibold tabular-nums text-white/60">
+              {revealing ? (
+                <span className="relative z-10 flex shrink-0 items-center gap-1 text-sm font-bold tabular-nums text-zinc-500">
+                  {corner}
                   {pct}%
                 </span>
-              )}
+              ) : isMine ? (
+                <span className="shrink-0 text-base">👈</span>
+              ) : null}
             </div>
           </button>
         );

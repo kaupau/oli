@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html,
@@ -12,13 +12,38 @@ body,
 
 body {
   margin: 0;
-  background: #07070c;
+  /* Notion-ish warm off-white with a soft playful tint at the top. */
+  background:
+    radial-gradient(120% 60% at 50% 0%, #efeafc 0%, rgba(247, 247, 245, 0) 55%),
+    #f7f7f5;
+  background-attachment: fixed;
+  color: #2f2c28;
   -webkit-font-smoothing: antialiased;
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", sans-serif;
 }
 
-/* Equalizer bars used on the now-playing card. */
+/* Equalizer bars. */
 @keyframes eq {
-  0%, 100% { transform: scaleY(0.3); }
+  0%, 100% { transform: scaleY(0.28); }
   50% { transform: scaleY(1); }
+}
+
+/* Spinning mystery disc. */
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+/* Little pop when you pick / when the answer reveals. */
+@keyframes pop {
+  0% { transform: scale(0.96); }
+  60% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+.animate-pop { animation: pop 0.25s ease-out; }
+
+/* Floating bob for the big emoji on the intro screen. */
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }

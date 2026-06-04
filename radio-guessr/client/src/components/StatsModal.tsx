@@ -12,62 +12,73 @@ export function StatsModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/30 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0d0d16] p-6 shadow-2xl"
+        className="animate-pop w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-white">Your stats</h2>
+          <h2 className="text-lg font-extrabold text-zinc-800">📊 Your stats</h2>
           <button
             onClick={onClose}
-            className="rounded-lg px-2 py-1 text-white/40 hover:bg-white/10 hover:text-white"
+            className="grid h-8 w-8 place-items-center rounded-full text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700"
           >
             ✕
           </button>
         </div>
 
-        <div className="grid grid-cols-4 gap-3 text-center">
-          <Stat label="Played" value={stats.played} />
-          <Stat label="Accuracy" value={`${accuracy}%`} />
-          <Stat label="Streak" value={stats.currentStreak} />
-          <Stat label="Best" value={stats.bestStreak} />
+        <div className="grid grid-cols-4 gap-2.5 text-center">
+          <Stat emoji="🎧" label="Played" value={stats.played} />
+          <Stat emoji="🎯" label="Accuracy" value={`${accuracy}%`} />
+          <Stat emoji="🔥" label="Streak" value={stats.currentStreak} />
+          <Stat emoji="🏆" label="Best" value={stats.bestStreak} />
         </div>
 
         {last.length > 0 && (
           <div className="mt-6">
-            <p className="mb-2 text-xs uppercase tracking-widest text-white/40">
-              Recent
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">
+              Recent rounds
             </p>
             <div className="flex flex-wrap gap-1.5">
               {last.map((r, i) => (
                 <span
                   key={i}
                   title={r ? "Correct" : "Missed"}
-                  className={`h-5 w-5 rounded ${
-                    r ? "bg-emerald-400/80" : "bg-rose-400/70"
+                  className={`grid h-6 w-6 place-items-center rounded-lg text-[11px] ${
+                    r ? "bg-emerald-100" : "bg-rose-100"
                   }`}
-                />
+                >
+                  {r ? "✅" : "❌"}
+                </span>
               ))}
             </div>
           </div>
         )}
 
-        <p className="mt-6 text-center text-xs text-white/30">
-          Stats are stored only in this browser.
+        <p className="mt-6 text-center text-xs text-zinc-400">
+          🔒 Stats are saved only in this browser.
         </p>
       </div>
     </div>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string | number }) {
+function Stat({
+  emoji,
+  label,
+  value,
+}: {
+  emoji: string;
+  label: string;
+  value: string | number;
+}) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.03] py-3">
-      <div className="text-2xl font-bold tabular-nums text-white">{value}</div>
-      <div className="text-[10px] uppercase tracking-wider text-white/40">
+    <div className="rounded-2xl border border-zinc-200 bg-zinc-50 py-3">
+      <div className="text-base">{emoji}</div>
+      <div className="mt-0.5 text-2xl font-extrabold tabular-nums text-zinc-800">{value}</div>
+      <div className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
         {label}
       </div>
     </div>
