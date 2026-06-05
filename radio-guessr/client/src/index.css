@@ -1,0 +1,328 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  --ink: #1f2329;
+  --soft: #6b7280;
+  --faint: #9aa1ab;
+  --aqua: #2f6fe0;
+  --bad: #df4f37;
+  --line: #c4cbd6;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica, Arial,
+    "Lucida Grande", sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+button:disabled {
+  cursor: default;
+}
+
+/* ---- desktop + window ---- */
+.desktop {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 26px 16px;
+  background: radial-gradient(125% 95% at 50% -5%, #9fb4d2 0%, #5f7ca2 62%, #48628a 100%) fixed;
+}
+.win {
+  width: 100%;
+  min-width: 0;
+  max-width: 470px;
+  background: #f3f4f6;
+  border: 1px solid #6c6c6c;
+  border-radius: 9px;
+  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.42), 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* ---- classic title bar ---- */
+.titlebar-mac {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 27px;
+  padding: 0 9px;
+  border-bottom: 1px solid #a4a4a4;
+  border-radius: 8px 8px 0 0;
+  background:
+    repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.045) 0 1px, rgba(255, 255, 255, 0) 1px 2px),
+    linear-gradient(to bottom, #ededed, #d1d1d1);
+  color: #2b2b2b;
+  user-select: none;
+}
+.titlebar-mac .tt {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  pointer-events: none;
+}
+.traffic {
+  display: flex;
+  gap: 8px;
+  z-index: 1;
+}
+.dot {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+}
+.dot::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 1.5px;
+  width: 6px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.65);
+}
+.dot.r {
+  background: radial-gradient(circle at 50% 35%, #ff8079, #ec5f57);
+  border: 1px solid #d9433c;
+}
+.dot.y {
+  background: radial-gradient(circle at 50% 35%, #ffd55a, #f5bb2e);
+  border: 1px solid #d49a22;
+}
+.dot.g {
+  background: radial-gradient(circle at 50% 35%, #5fe06f, #28c840);
+  border: 1px solid #1fa82e;
+}
+
+/* ---- iTunes-style status display ---- */
+.display {
+  background: linear-gradient(to bottom, #eaeef3, #d7dee9);
+  border: 1px solid #a9b2c0;
+  border-radius: 6px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  padding: 7px 12px 8px;
+}
+
+/* ---- aqua progress lozenge ---- */
+.aqua-track {
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
+  background: #dfe3ea;
+  border: 1px solid #adb5c1;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+}
+.aqua-track > span {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+  background: linear-gradient(to bottom, #bcd9ff, #5a9bf0 47%, #2f6fe0 53%, #79aef7);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transition: width 0.25s linear;
+}
+
+/* ---- aqua buttons ---- */
+.aqua-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 999px;
+  border: 1px solid #8b94a3;
+  background: linear-gradient(to bottom, #ffffff, #eef1f5 47%, #dfe4ea 53%, #f4f6f8);
+  box-shadow: inset 0 1px 0 #fff, 0 1px 1.5px rgba(0, 0, 0, 0.18);
+  color: #1f2329;
+  font-size: 12px;
+  padding: 5px 13px;
+  transition: filter 0.12s;
+}
+.aqua-btn:hover {
+  filter: brightness(1.03);
+}
+.aqua-btn:active {
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+.aqua-btn-blue {
+  border-color: #2a5fb0;
+  background: linear-gradient(to bottom, #bad5ff, #5a93f2 47%, #2f6fe0 53%, #6ba1f6);
+  color: #fff;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+/* ---- track list ---- */
+.list {
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  overflow: hidden;
+  background: #fff;
+}
+.lhead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 12px;
+  background: linear-gradient(to bottom, #f7f8fa, #e7e9ee);
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+  color: #707784;
+}
+.trow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 9px 12px;
+  border: none;
+  border-bottom: 1px solid #e7ebf1;
+  background: #fff;
+  color: #1f2329;
+  transition: background 0.12s;
+}
+.trow:last-child {
+  border-bottom: none;
+}
+.trow.stripe {
+  background: #f2f6fc;
+}
+.trow:not(:disabled):hover {
+  background: #e4eefb;
+}
+.trow.sel {
+  background: linear-gradient(to bottom, #5a9bf0, #2f6fe0);
+  color: #fff;
+}
+.trow.bad {
+  background: linear-gradient(to bottom, #f2897a, #df4f37);
+  color: #fff;
+}
+.trow.sel .sub,
+.trow.bad .sub {
+  color: rgba(255, 255, 255, 0.85);
+}
+.trow.dim {
+  opacity: 0.5;
+}
+.badge {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 5px;
+  background: #eef0f3;
+  border: 1px solid #cfd4dc;
+  color: #5b6675;
+  font-size: 12px;
+  font-weight: 600;
+}
+.trow.sel .badge,
+.trow.bad .badge {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.55);
+  color: #fff;
+}
+
+/* ---- status bar ---- */
+.statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 11px;
+  color: #5b6470;
+  background: linear-gradient(to bottom, #f0f1f3, #e1e3e7);
+  border-top: 1px solid #c4c8cf;
+  border-radius: 0 0 8px 8px;
+}
+
+/* ---- helpers ---- */
+.soft {
+  color: var(--soft);
+}
+.faint {
+  color: var(--faint);
+}
+.accent {
+  color: var(--aqua);
+}
+.bad-t {
+  color: var(--bad);
+}
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- overlay ---- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(20, 28, 40, 0.5);
+  backdrop-filter: blur(3px);
+}
+
+/* ---- animations ---- */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spin {
+  animation: spin 3.6s linear infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+.pulse {
+  animation: pulse-dot 1.7s ease-in-out infinite;
+}
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.fade-up {
+  animation: fade-up 0.3s ease-out both;
+}

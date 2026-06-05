@@ -1,0 +1,10 @@
+# The repo-root .gitignore ignores any path named "server" (the Go backend
+# binary). Re-include this project's TypeScript server directory.
+!server/
+
+node_modules/
+dist/
+*.log
+
+# Generated demo audio (created at server startup).
+server/public/demo/
