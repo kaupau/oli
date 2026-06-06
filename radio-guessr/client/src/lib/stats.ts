@@ -1,6 +1,6 @@
 // Per-browser streaks & stats, persisted in localStorage. No accounts needed.
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 /** Outcome of a single round from this player's point of view. */
 export type PlayResult = "win" | "miss" | "skip";
@@ -57,36 +57,36 @@ function persist(s: Stats) {
 export function useStats() {
   const [stats, setStats] = useState<Stats>(load);
 
+  // Persist whenever stats change. Keeping this out of the setState updaters
+  // means those stay pure reducers (no double-write under StrictMode, no I/O
+  // mid-render).
+  useEffect(() => {
+    persist(stats);
+  }, [stats]);
+
   // Score a guess (win/miss). Skipped rounds don't call this, so they never
-  // break a streak.
+  // break a streak — the streak counts consecutive *correct guesses*, and
+  // rounds you didn't answer are simply not counted either way.
   const record = useCallback((correct: boolean) => {
-    setStats((prev) => {
-      const next: Stats = {
-        ...prev,
-        played: prev.played + 1,
-        correct: prev.correct + (correct ? 1 : 0),
-        currentStreak: correct ? prev.currentStreak + 1 : 0,
-        bestStreak: correct
-          ? Math.max(prev.bestStreak, prev.currentStreak + 1)
-          : prev.bestStreak,
-        history: [...prev.history, correct ? 1 : 0].slice(-50),
-      };
-      persist(next);
-      return next;
-    });
+    setStats((prev) => ({
+      ...prev,
+      played: prev.played + 1,
+      correct: prev.correct + (correct ? 1 : 0),
+      currentStreak: correct ? prev.currentStreak + 1 : 0,
+      bestStreak: correct
+        ? Math.max(prev.bestStreak, prev.currentStreak + 1)
+        : prev.bestStreak,
+      history: [...prev.history, correct ? 1 : 0].slice(-50),
+    }));
   }, []);
 
   // Append a round to the "recently played" history (every round, including
   // ones the player didn't guess).
   const logPlay = useCallback((play: Omit<Play, "at">) => {
-    setStats((prev) => {
-      const next: Stats = {
-        ...prev,
-        plays: [...prev.plays, { ...play, at: Date.now() }].slice(-MAX_PLAYS),
-      };
-      persist(next);
-      return next;
-    });
+    setStats((prev) => ({
+      ...prev,
+      plays: [...prev.plays, { ...play, at: Date.now() }].slice(-MAX_PLAYS),
+    }));
   }, []);
 
   return { stats, record, logPlay };

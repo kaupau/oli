@@ -19,7 +19,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RoundPublic } from "../protocol";
 
-const DRIFT_TOLERANCE_SEC = 0.35;
+// Only a genuinely jarring desync warrants a hard seek. Seeking on mobile forces
+// a re-buffer, so a low threshold creates a stutter loop (seek → rebuffer → drift
+// → seek). Normal timer jitter stays well under this, so we almost never seek.
+const HARD_SEEK_SEC = 1.0;
+// Below this we treat the clip as perfectly in sync and leave it alone.
+const SOFT_SYNC_SEC = 0.25;
 const FADE_SEC = 0.18;
 
 export function useSyncedAudio(
@@ -150,6 +155,14 @@ export function useSyncedAudio(
       gain.gain.exponentialRampToValueAtTime(1, ctx.currentTime + FADE_SEC);
     };
 
+    const seekTo = (sec: number) => {
+      try {
+        el.currentTime = sec;
+      } catch {
+        /* not seekable yet */
+      }
+    };
+
     let timer = 0;
     const tick = () => {
       const now = serverNow();
@@ -160,30 +173,65 @@ export function useSyncedAudio(
       if (now < current.startAt) {
         // Pre-roll: hold silent until the listen window opens.
         if (!el.paused) el.pause();
+        el.playbackRate = 1;
       } else if (now <= roundEnd) {
         // Listen *and* reveal: keep the clip playing straight through so there's
         // no dead air while the answer is shown — the song just keeps going.
         const target = current.clipStartSec + elapsedSec;
-        if (Math.abs(el.currentTime - target) > DRIFT_TOLERANCE_SEC) {
-          try {
-            el.currentTime = target;
-          } catch {
-            /* not seekable yet */
-          }
-        }
+
+        // Phones suspend the audio graph when the tab is backgrounded or the
+        // screen locks; nudge it back awake each tick so sound returns on focus.
+        if (!muted) ctxRef.current?.resume?.().catch(() => {});
+
         if (el.paused) {
+          // (Re)starting: land near the right spot, then play.
+          if (el.readyState >= 1 && Math.abs(el.currentTime - target) > HARD_SEEK_SEC) {
+            seekTo(target);
+          }
+          el.playbackRate = 1;
           fadeIn();
           el.play().catch(() => {});
+        } else if (!el.seeking && el.readyState >= 3) {
+          // Only correct while we actually have buffered audio and aren't already
+          // seeking — otherwise a correction just kicks off another rebuffer.
+          const drift = el.currentTime - target; // +ve = running ahead
+          const ad = Math.abs(drift);
+          if (ad > HARD_SEEK_SEC) {
+            // Big jump (e.g. returning from a locked screen): seek once.
+            el.playbackRate = 1;
+            seekTo(target);
+          } else if (ad > SOFT_SYNC_SEC) {
+            // Small drift: glide back by nudging the rate — inaudible, no stutter.
+            el.playbackRate = drift > 0 ? 0.97 : 1.03;
+          } else {
+            el.playbackRate = 1;
+          }
         }
       } else {
         // Round fully over: stop before the swap to the next clip.
         if (!el.paused) el.pause();
+        el.playbackRate = 1;
       }
-      timer = window.setTimeout(tick, 200);
+      timer = window.setTimeout(tick, 250);
     };
     tick();
 
-    return () => window.clearTimeout(timer);
+    // Re-sync immediately when the tab regains focus rather than waiting for the
+    // next tick — the gap after a phone unlock can be large.
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        if (!muted) ctxRef.current?.resume?.().catch(() => {});
+        window.clearTimeout(timer);
+        tick();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+      el.playbackRate = 1;
+    };
   }, [current, armed, serverNow, muted]);
 
   const getAnalyser = useCallback(() => analyserRef.current, []);
