@@ -66,6 +66,21 @@ docker run -p 8787:8787 radio-guessr
 - On a host with normal internet you'll get **real songs from iTunes**; with no
   egress it falls back to demo tones.
 
+### Fly.io
+
+A ready-to-use [`fly.toml`](./fly.toml) is included (a **separate** app from
+anything else in this repo). From this `radio-guessr/` directory:
+
+```bash
+fly launch --copy-config --name mixtape-radio   # first time only — creates the app
+fly deploy                                       # deploy / redeploy
+```
+
+Pick your own unique `--name` if `mixtape-radio` is taken. The live radio
+timeline lives in memory, so keep it to a **single machine** — don't scale out,
+or different machines would play different songs (the config already pins
+`min/max = 1` and disables auto-stop so the station stays in sync).
+
 ## Configuration
 
 Environment variables (server):

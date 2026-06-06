@@ -1,0 +1,41 @@
+# Fly.io config for Mixtape (radio-guessr) — a separate app from strudelvibe.
+#
+# Deploy from THIS directory (fly uses ./Dockerfile as the build):
+#   cd radio-guessr
+#   fly launch --copy-config --name mixtape-radio   # first time: creates the app
+#   fly deploy                                       # subsequent deploys
+#
+# Pick your own unique --name if "mixtape-radio" is taken.
+#
+# IMPORTANT: the live "radio" timeline is kept in memory, so this app must run
+# as a SINGLE machine — don't scale it out (every machine would play a
+# different song). min/max one machine is the intended setup.
+
+app = "mixtape-radio"
+primary_region = "sjc"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8787"
+  # Round pacing (ms). Tune to taste.
+  LISTEN_MS = "20000"
+  REVEAL_MS = "8000"
+
+[http_service]
+  internal_port = 8787
+  force_https = true
+  # Keep one machine always on so the station never resets / desyncs.
+  auto_start_machines = true
+  auto_stop_machines = false
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = "connections"
+    hard_limit = 1000
+    soft_limit = 800
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
