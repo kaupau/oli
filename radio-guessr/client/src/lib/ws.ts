@@ -10,6 +10,9 @@ function wsUrl(): string {
   return `${proto}://${location.host}/ws`;
 }
 
+/** Server's verdict on our own guess, delivered the instant we pick. */
+export type GuessAck = { roundId: string; choiceId: string; correct: boolean };
+
 export type Connection = {
   status: "connecting" | "open" | "closed";
   current: RoundPublic | null;
@@ -21,6 +24,8 @@ export type Connection = {
   /** Best round-trip time observed, ms (sync quality). */
   rtt: number;
   guess: (roundId: string, choiceId: string) => void;
+  /** Most recent server verdict on our own guess (for instant feedback). */
+  lastAck: GuessAck | null;
 };
 
 export function useRadio(): Connection {
@@ -30,6 +35,7 @@ export function useRadio(): Connection {
   const [reveal, setReveal] = useState<Reveal | null>(null);
   const [listeners, setListeners] = useState(0);
   const [rtt, setRtt] = useState(0);
+  const [lastAck, setLastAck] = useState<GuessAck | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
   const offsetRef = useRef(0); // serverTime - localTime
@@ -103,7 +109,7 @@ export function useRadio(): Connection {
             break;
           }
           case "guessAck":
-            // Handled optimistically client-side; nothing required here.
+            setLastAck({ roundId: msg.roundId, choiceId: msg.choiceId, correct: msg.correct });
             break;
         }
       };
@@ -125,5 +131,5 @@ export function useRadio(): Connection {
     };
   }, []);
 
-  return { status, current, next, reveal, listeners, serverNow, rtt, guess };
+  return { status, current, next, reveal, listeners, serverNow, rtt, guess, lastAck };
 }

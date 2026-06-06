@@ -87,13 +87,14 @@ async function main() {
         // Reply immediately for clock-offset estimation.
         ws.send(JSON.stringify({ t: "pong", t0: msg.t0, ts: Date.now() } satisfies ServerMsg));
       } else if (msg.t === "guess") {
-        const ok = radio.recordGuess(connId, msg.roundId, msg.choiceId);
-        if (ok) {
+        const res = radio.recordGuess(connId, msg.roundId, msg.choiceId);
+        if (res.accepted) {
           ws.send(
             JSON.stringify({
               t: "guessAck",
               roundId: msg.roundId,
               choiceId: msg.choiceId,
+              correct: res.correct,
             } satisfies ServerMsg)
           );
         }

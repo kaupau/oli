@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRadio } from "./lib/ws";
 import { useSyncedAudio } from "./lib/audio";
 import { useStats } from "./lib/stats";
@@ -6,6 +6,7 @@ import { Choices } from "./components/Choices";
 import { StatsModal } from "./components/StatsModal";
 import { Disc } from "./components/Disc";
 import { Cover } from "./components/Cover";
+import { Visualizer } from "./components/Visualizer";
 import { burstConfetti } from "./lib/confetti";
 
 type Phase = "preroll" | "listen" | "reveal";
@@ -14,7 +15,12 @@ export default function App() {
   const radio = useRadio();
   const { stats, record } = useStats();
   const [muted, setMuted] = useState(false);
-  const { armed, arm } = useSyncedAudio(radio.current, radio.next, radio.serverNow, muted);
+  const { armed, arm, getAnalyser } = useSyncedAudio(
+    radio.current,
+    radio.next,
+    radio.serverNow,
+    muted
+  );
 
   const [showStats, setShowStats] = useState(false);
   const [myChoice, setMyChoice] = useState<{ roundId: string; choiceId: string } | null>(null);
@@ -30,9 +36,14 @@ export default function App() {
   const current = radio.current;
   const reveal = radio.reveal;
   const myChoiceId = myChoice && current && myChoice.roundId === current.id ? myChoice.choiceId : null;
+  // Server's verdict on our pick this round, the instant the ack arrives.
+  const myResult =
+    radio.lastAck && current && radio.lastAck.roundId === current.id ? radio.lastAck.correct : null;
 
-  // Phase + countdown derived from synced server time.
-  const { phase, secondsLeft, progress, playing } = useMemo(() => {
+  // Phase + countdown + progress from synced server time. Recomputed every
+  // render — the ~10fps tick above drives it. Must NOT be useMemo'd: current and
+  // serverNow are stable within a round, so memoizing would freeze the bar.
+  const { phase, secondsLeft, progress, playing } = (() => {
     if (!current) return { phase: "preroll" as Phase, secondsLeft: 0, progress: 0, playing: false };
     const now = radio.serverNow();
     const listenEnd = current.startAt + current.listenMs;
@@ -59,19 +70,19 @@ export default function App() {
       progress: (now - listenEnd) / current.revealMs,
       playing: false,
     };
-  }, [current, radio.serverNow, reveal]);
+  })();
 
-  // Score the round once, when the answer is revealed and the player guessed.
+  // Score the round once, the instant the server acks our guess — so the
+  // stats update and the confetti fire immediately on a correct pick rather
+  // than waiting for the reveal window.
   useEffect(() => {
-    if (!reveal) return;
-    if (scoredRef.current === reveal.roundId) return;
-    if (myChoice && myChoice.roundId === reveal.roundId) {
-      scoredRef.current = reveal.roundId;
-      const correct = myChoice.choiceId === reveal.correctChoiceId;
-      record(correct);
-      if (correct) burstConfetti();
-    }
-  }, [reveal, myChoice, record]);
+    const ack = radio.lastAck;
+    if (!ack) return;
+    if (scoredRef.current === ack.roundId) return;
+    scoredRef.current = ack.roundId;
+    record(ack.correct);
+    if (ack.correct) burstConfetti();
+  }, [radio.lastAck, record]);
 
   const pick = (choiceId: string) => {
     if (!current || phase !== "listen" || myChoiceId) return;
@@ -90,6 +101,7 @@ export default function App() {
 
   return (
     <div className="desktop">
+      <Visualizer getAnalyser={getAnalyser} active={playing} />
       <div className="win">
         <div className="titlebar-mac">
           <div className="traffic">
@@ -127,6 +139,7 @@ export default function App() {
                 choices={current.choices}
                 phase={phase}
                 myChoiceId={myChoiceId}
+                myResult={myResult}
                 reveal={reveal}
                 onPick={pick}
               />
@@ -241,7 +254,7 @@ function PlayerStrip({
         </div>
       </div>
 
-      <div className="flex shrink-0 flex-col gap-1.5">
+      <div className="flex w-[76px] shrink-0 flex-col gap-1.5">
         <button className="aqua-btn" onClick={onShowStats}>
           Stats
         </button>

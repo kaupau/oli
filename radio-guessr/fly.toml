@@ -1,0 +1,17 @@
+# Mixtape (radio-guessr) — single in-memory process owns the radio timeline,
+# vote tally, and listener set, so this app must run as exactly ONE machine.
+# Do not scale beyond 1: a second machine = a second, out-of-sync radio.
+app = "mixtape-game"
+primary_region = "sjc"
+
+[build]
+
+[env]
+  PORT = "8787"
+
+[http_service]
+  internal_port = 8787
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0

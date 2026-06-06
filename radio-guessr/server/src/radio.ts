@@ -79,18 +79,26 @@ export class Radio {
   }
 
   /**
-   * Record a guess. Returns true if accepted (valid round, first guess from
-   * this connection, still within the listen window).
+   * Record a guess. Returns `{ accepted }` true when the guess is valid (correct
+   * round, first guess from this connection, still within the listen window),
+   * along with `correct` so the player gets instant feedback on their own pick.
+   * Telling a player whether their single locked-in guess was right does not
+   * leak anything exploitable — they cannot guess again this round.
    */
-  recordGuess(connId: string, roundId: string, choiceId: string): boolean {
+  recordGuess(
+    connId: string,
+    roundId: string,
+    choiceId: string
+  ): { accepted: boolean; correct: boolean } {
+    const reject = { accepted: false, correct: false };
     const r = this.current;
-    if (r.pub.id !== roundId || r.revealed) return false;
-    if (Date.now() > r.pub.startAt + r.pub.listenMs) return false;
-    if (r.guessers.has(connId)) return false;
-    if (!r.pub.choices.some((c) => c.id === choiceId)) return false;
+    if (r.pub.id !== roundId || r.revealed) return reject;
+    if (Date.now() > r.pub.startAt + r.pub.listenMs) return reject;
+    if (r.guessers.has(connId)) return reject;
+    if (!r.pub.choices.some((c) => c.id === choiceId)) return reject;
     r.guessers.add(connId);
     r.tally.set(choiceId, (r.tally.get(choiceId) ?? 0) + 1);
-    return true;
+    return { accepted: true, correct: choiceId === r.correctChoiceId };
   }
 
   // --- internals ---

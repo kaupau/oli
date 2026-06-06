@@ -43,7 +43,7 @@ export type ServerMsg =
   | { t: "reveal"; reveal: Reveal }
   | { t: "listeners"; count: number }
   | { t: "pong"; t0: number; ts: number }
-  | { t: "guessAck"; roundId: string; choiceId: string };
+  | { t: "guessAck"; roundId: string; choiceId: string; correct: boolean };
 
 /** Client -> server messages. */
 export type ClientMsg =

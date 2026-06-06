@@ -6,12 +6,15 @@ export function Choices({
   choices,
   phase,
   myChoiceId,
+  myResult,
   reveal,
   onPick,
 }: {
   choices: Choice[];
   phase: Phase;
   myChoiceId: string | null;
+  /** Server's verdict on our pick this round: true/false once known, else null. */
+  myResult: boolean | null;
   reveal: Reveal | null;
   onPick: (id: string) => void;
 }) {
@@ -34,6 +37,9 @@ export function Choices({
         const pct = total > 0 ? Math.round((votes / total) * 100) : 0;
         const disabled = phase !== "listen" || (myChoiceId !== null && !isMine);
 
+        // Before reveal we still show the player instant feedback on their own
+        // pick (green/blue when right, red when wrong) without exposing which of
+        // the *other* rows is the correct answer.
         const cls = revealing
           ? isCorrect
             ? "sel"
@@ -41,7 +47,9 @@ export function Choices({
               ? "bad"
               : "dim"
           : isMine
-            ? "sel"
+            ? myResult === false
+              ? "bad"
+              : "sel"
             : i % 2 === 1
               ? "stripe"
               : "";
@@ -65,7 +73,7 @@ export function Choices({
                   {pct}%
                 </>
               ) : isMine ? (
-                "♪"
+                myResult === true ? "✓" : myResult === false ? "✗" : "♪"
               ) : (
                 ""
               )}
