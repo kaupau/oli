@@ -13,11 +13,14 @@ export function Cover({
   revealed,
   playing = false,
   size = 58,
+  fill = false,
 }: {
   src?: string;
   revealed: boolean;
   playing?: boolean;
   size?: number;
+  /** Stretch to a square matching the parent's height instead of a fixed size. */
+  fill?: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -36,12 +39,25 @@ export function Cover({
     img.src = src;
   }, [src, revealed]);
 
-  if (!src) return <Disc size={size} spinning={playing} />;
+  if (!src)
+    return fill ? (
+      <div className="grid aspect-square shrink-0 self-stretch place-items-center">
+        <Disc size={size} spinning={playing} />
+      </div>
+    ) : (
+      <Disc size={size} spinning={playing} />
+    );
 
   return (
     <div
-      className="relative shrink-0 overflow-hidden rounded-md"
-      style={{ width: size, height: size, boxShadow: "0 1px 3px rgba(0,0,0,0.3)", background: "#cdd3dc" }}
+      className={`relative shrink-0 overflow-hidden rounded-md ${
+        fill ? "aspect-square self-stretch" : ""
+      }`}
+      style={
+        fill
+          ? { boxShadow: "0 1px 3px rgba(0,0,0,0.3)", background: "#cdd3dc" }
+          : { width: size, height: size, boxShadow: "0 1px 3px rgba(0,0,0,0.3)", background: "#cdd3dc" }
+      }
     >
       {revealed ? (
         <img src={src} alt="" className="fade-up h-full w-full object-cover" />
@@ -61,7 +77,7 @@ export function Cover({
           />
           <span
             className="absolute inset-0 grid place-items-center font-bold text-white"
-            style={{ fontSize: size * 0.4, textShadow: "0 1px 4px rgba(0,0,0,0.55)" }}
+            style={{ fontSize: fill ? 22 : size * 0.4, textShadow: "0 1px 4px rgba(0,0,0,0.55)" }}
           >
             ?
           </span>

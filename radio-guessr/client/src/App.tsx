@@ -271,19 +271,24 @@ function PlayerStrip({
     );
 
   return (
-    <div className="flex items-center gap-3">
-      <Cover src={coverUrl} revealed={phase === "reveal"} playing={playing} size={58} />
+    <div className="flex items-stretch gap-3">
+      <Cover src={coverUrl} revealed={phase === "reveal"} playing={playing} size={64} />
 
-      <div className="display min-w-0 flex-1">
+      <div className="display flex min-w-0 flex-1 flex-col justify-center">
         <div className="flex items-center justify-between gap-2">
           <div className="truncate text-[12.5px] leading-tight">{status}</div>
-          {phase === "reveal" && guessed && (
-            <span className={`shrink-0 text-[11px] font-semibold ${wasCorrect ? "accent" : "bad-t"}`}>
-              {wasCorrect ? "✓ Correct" : "✗ Missed"}
-            </span>
+          {phase === "reveal" && title && (
+            <div className="flex shrink-0 items-center gap-2.5 fade-up">
+              {guessed && (
+                <span className={`text-[11px] font-semibold ${wasCorrect ? "accent" : "bad-t"}`}>
+                  {wasCorrect ? "✓ Correct" : "✗ Missed"}
+                </span>
+              )}
+              <ServiceLinks title={title} artist={artist ?? ""} compact />
+            </div>
           )}
         </div>
-        <div className="mt-1.5 flex items-center gap-2">
+        <div className="mt-2 flex items-center gap-2">
           <span className="tnum soft w-7 shrink-0 text-[11px]">{fmt(elapsed)}</span>
           <div className="aqua-track flex-1">
             <span style={{ width: `${pct}%` }} />
@@ -303,13 +308,6 @@ function PlayerStrip({
           >
             <SpeakerIcon muted={muted} />
           </button>
-        </div>
-        <div className="svc-row mt-1.5">
-          {phase === "reveal" && title && (
-            <div className="fade-up">
-              <ServiceLinks title={title} artist={artist ?? ""} />
-            </div>
-          )}
         </div>
       </div>
     </div>

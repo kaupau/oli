@@ -444,13 +444,6 @@ button:disabled {
 }
 
 /* ---- streaming service links ---- */
-/* Reserve the row's height even before reveal so the player doesn't grow when
-   the "Add to …" links appear. */
-.svc-row {
-  display: flex;
-  align-items: center;
-  min-height: 22px;
-}
 .svc {
   display: inline-flex;
   align-items: center;
