@@ -30,6 +30,9 @@ export default function App() {
   // Seed from the persisted streak so reloading a page mid-streak (e.g. a saved
   // streak of 5) doesn't fire milestone confetti on mount.
   const milestoneRef = useRef(stats.currentStreak);
+  const prevStreakRef = useRef(stats.currentStreak);
+  // Holds the just-ended streak length briefly so we can animate it breaking.
+  const [streakLost, setStreakLost] = useState<number | null>(null);
 
   // Re-render at ~10fps to drive the countdown smoothly.
   const [, setTick] = useState(0);
@@ -118,6 +121,18 @@ export default function App() {
     milestoneRef.current = s;
   }, [stats.currentStreak]);
 
+  // When a streak of 2+ breaks, flash a brief "streak lost" animation so the
+  // loss actually lands rather than the chip just silently vanishing.
+  useEffect(() => {
+    const prev = prevStreakRef.current;
+    prevStreakRef.current = stats.currentStreak;
+    if (prev >= 2 && stats.currentStreak === 0) {
+      setStreakLost(prev);
+      const t = setTimeout(() => setStreakLost(null), 1600);
+      return () => clearTimeout(t);
+    }
+  }, [stats.currentStreak]);
+
   const pick = (choiceId: string) => {
     if (!current || phase !== "listen" || myChoiceId) return;
     setMyChoice({ roundId: current.id, choiceId });
@@ -204,6 +219,17 @@ export default function App() {
               {stats.currentStreak >= 3 && <span className="streak-hot"> on fire!</span>}
             </span>
           )}
+          {streakLost !== null && (
+            <span
+              key={`lost-${streakLost}`}
+              className="streak-lost"
+              title={`Streak of ${streakLost} ended`}
+            >
+              <span className="flame-out">🔥</span>
+              <span className="tnum">{streakLost}</span>
+              <span className="streak-lost-label">lost</span>
+            </span>
+          )}
         </div>
       </div>
 
@@ -272,18 +298,23 @@ function PlayerStrip({
 
   return (
     <div className="flex items-stretch gap-3">
-      <Cover src={coverUrl} revealed={phase === "reveal"} playing={playing} size={64} />
+      <div className="relative shrink-0">
+        <Cover src={coverUrl} revealed={phase === "reveal"} playing={playing} size={64} />
+        {phase === "reveal" && guessed && (
+          <span
+            className={`result-badge ${wasCorrect ? "good" : "bad"}`}
+            title={wasCorrect ? "Correct" : "Missed"}
+          >
+            {wasCorrect ? "✓" : "✗"}
+          </span>
+        )}
+      </div>
 
       <div className="display flex min-w-0 flex-1 flex-col justify-center">
         <div className="flex items-center justify-between gap-2">
           <div className="truncate text-[12.5px] leading-tight">{status}</div>
           {phase === "reveal" && title && (
             <div className="flex shrink-0 items-center gap-2.5 fade-up">
-              {guessed && (
-                <span className={`text-[11px] font-semibold ${wasCorrect ? "accent" : "bad-t"}`}>
-                  {wasCorrect ? "✓ Correct" : "✗ Missed"}
-                </span>
-              )}
               <ServiceLinks title={title} artist={artist ?? ""} compact />
             </div>
           )}
