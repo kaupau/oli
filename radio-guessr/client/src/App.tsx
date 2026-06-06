@@ -27,7 +27,9 @@ export default function App() {
   const [myChoice, setMyChoice] = useState<{ roundId: string; choiceId: string } | null>(null);
   const scoredRef = useRef<string | null>(null);
   const loggedRef = useRef<string | null>(null);
-  const milestoneRef = useRef(0);
+  // Seed from the persisted streak so reloading a page mid-streak (e.g. a saved
+  // streak of 5) doesn't fire milestone confetti on mount.
+  const milestoneRef = useRef(stats.currentStreak);
 
   // Re-render at ~10fps to drive the countdown smoothly.
   const [, setTick] = useState(0);

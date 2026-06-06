@@ -57,7 +57,7 @@ export function StatsModal({
               <div className="soft mb-2 text-[11px]">Recently played</div>
               <div className="recent-list">
                 {recent.slice(0, 40).map((p, i) => (
-                  <div key={i} className="recent-row">
+                  <div key={`${p.at}-${i}`} className="recent-row">
                     <span className={`recent-mark ${p.result}`} title={label(p.result)}>
                       {p.result === "win" ? "✓" : p.result === "miss" ? "✗" : "–"}
                     </span>

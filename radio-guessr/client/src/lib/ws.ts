@@ -76,7 +76,12 @@ export function useRadio(): Connection {
       };
 
       ws.onmessage = (ev) => {
-        const msg: ServerMsg = JSON.parse(ev.data);
+        let msg: ServerMsg;
+        try {
+          msg = JSON.parse(ev.data);
+        } catch {
+          return; // ignore a malformed frame rather than throwing in the handler
+        }
         switch (msg.t) {
           case "welcome":
             // Seed the clock from welcome (refined by pongs), then state.

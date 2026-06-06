@@ -445,51 +445,50 @@ button:disabled {
 
 /* ---- streaming service links ---- */
 /* Reserve the row's height even before reveal so the player doesn't grow when
-   the "Add to …" buttons appear. */
+   the "Add to …" links appear. */
 .svc-row {
   display: flex;
   align-items: center;
-  min-height: 24px;
+  min-height: 22px;
 }
 .svc {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 16px;
 }
+/* Understated text links that sit quietly inside the iTunes display — the brand
+   colour only surfaces on hover, so the reveal stays clean. */
 .svc-link {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 3px 9px;
-  border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
   text-decoration: none;
-  border: 1px solid #c9ced8;
-  background: #fff;
-  color: #1f2329;
-  transition: filter 0.12s, transform 0.12s;
+  color: var(--soft);
+  transition: color 0.12s;
 }
 .svc-link:hover {
-  filter: brightness(0.97);
-  transform: translateY(-0.5px);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
-.svc-link.svc-apple {
+.svc-link.svc-apple:hover {
   color: #fa2d48;
 }
-.svc-link.svc-spotify {
+.svc-link.svc-spotify:hover {
   color: #1db954;
 }
-/* compact = icon-only pills for dense list rows */
+/* compact = small icon-only links for the dense recently-played rows: muted
+   grey by default, lighting up to the brand colour on hover. */
 .svc-compact {
   flex-shrink: 0;
+  gap: 10px;
 }
 .svc-compact .svc-link {
-  padding: 3px;
-  width: 22px;
-  height: 22px;
-  justify-content: center;
-  border-radius: 6px;
+  color: #b9bfc9;
+}
+.svc-compact .svc-link:hover {
+  text-decoration: none;
 }
 
 /* ---- overlay ---- */
