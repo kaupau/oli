@@ -44,7 +44,7 @@ button:disabled {
   align-items: center;
   justify-content: center;
   padding: 26px 16px;
-  background: radial-gradient(125% 95% at 50% -5%, #9fb4d2 0%, #5f7ca2 62%, #48628a 100%) fixed;
+  background: radial-gradient(125% 95% at 50% -5%, #1b2942 0%, #0e1626 58%, #070b14 100%) fixed;
 }
 .win {
   position: relative;
@@ -73,8 +73,8 @@ button:disabled {
   font-size: 12px;
   line-height: 15px;
   letter-spacing: 0.5px;
-  color: rgba(233, 241, 255, 0.17);
-  text-shadow: 0 0 7px rgba(120, 170, 255, 0.22);
+  color: rgba(140, 195, 255, 0.42);
+  text-shadow: 0 0 9px rgba(80, 150, 255, 0.5);
 }
 
 /* ---- classic title bar ---- */
@@ -233,8 +233,14 @@ button:disabled {
 .trow.stripe {
   background: #f2f6fc;
 }
-.trow:not(:disabled):hover {
+.trow:not(:disabled):not(.sel):not(.bad):hover {
   background: #e4eefb;
+}
+/* An already-picked row keeps its blue/red fill on hover (white text needs the
+   coloured background) — just lift it slightly. */
+.trow.sel:not(:disabled):hover,
+.trow.bad:not(:disabled):hover {
+  filter: brightness(1.06);
 }
 .trow.sel {
   background: linear-gradient(to bottom, #5a9bf0, #2f6fe0);

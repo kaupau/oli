@@ -68,7 +68,9 @@ export default function App() {
       phase: "reveal" as Phase,
       secondsLeft: Math.max(0, Math.ceil((roundEnd - now) / 1000)),
       progress: (now - listenEnd) / current.revealMs,
-      playing: false,
+      // The clip keeps playing through the reveal, so the disc + visualizer
+      // should stay alive too.
+      playing: true,
     };
   })();
 

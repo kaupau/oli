@@ -135,8 +135,11 @@ export class Radio {
     );
 
     const clipDurationSec = Math.round(this.opts.listenMs / 1000);
-    // Start a little way into the preview for variety; keep within ~30s clips.
-    const maxStart = Math.max(0, 28 - clipDurationSec);
+    // The clip now plays through both the listen and reveal windows, so it must
+    // have enough runway to cover the whole round within a ~30s preview. Start a
+    // touch into the preview for variety, but never so late that it runs dry.
+    const playSec = Math.round((this.opts.listenMs + this.opts.revealMs) / 1000);
+    const maxStart = Math.max(0, 29 - playSec);
     const clipStartSec = Math.floor(Math.random() * (maxStart + 1));
 
     const pub: RoundPublic = {

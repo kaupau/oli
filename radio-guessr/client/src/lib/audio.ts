@@ -154,12 +154,15 @@ export function useSyncedAudio(
     const tick = () => {
       const now = serverNow();
       const listenEnd = current.startAt + current.listenMs;
+      const roundEnd = listenEnd + current.revealMs;
       const elapsedSec = (now - current.startAt) / 1000;
 
       if (now < current.startAt) {
         // Pre-roll: hold silent until the listen window opens.
         if (!el.paused) el.pause();
-      } else if (now <= listenEnd) {
+      } else if (now <= roundEnd) {
+        // Listen *and* reveal: keep the clip playing straight through so there's
+        // no dead air while the answer is shown — the song just keeps going.
         const target = current.clipStartSec + elapsedSec;
         if (Math.abs(el.currentTime - target) > DRIFT_TOLERANCE_SEC) {
           try {
@@ -173,7 +176,7 @@ export function useSyncedAudio(
           el.play().catch(() => {});
         }
       } else {
-        // Reveal window: stop the music.
+        // Round fully over: stop before the swap to the next clip.
         if (!el.paused) el.pause();
       }
       timer = window.setTimeout(tick, 200);
