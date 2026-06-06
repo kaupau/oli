@@ -2,6 +2,17 @@
 
 import { useCallback, useState } from "react";
 
+/** Outcome of a single round from this player's point of view. */
+export type PlayResult = "win" | "miss" | "skip";
+
+/** One past round, for the "recently played" history. */
+export type Play = {
+  title: string;
+  artist: string;
+  result: PlayResult;
+  at: number;
+};
+
 export type Stats = {
   played: number;
   correct: number;
@@ -9,9 +20,12 @@ export type Stats = {
   bestStreak: number;
   /** Distribution of streak lengths achieved (for a wordle-style bar chart). */
   history: number[]; // last N results, 1 = correct, 0 = wrong
+  /** Recently played rounds (oldest first), capped. */
+  plays: Play[];
 };
 
 const KEY = "radioguessr.stats.v1";
+const MAX_PLAYS = 100;
 
 const EMPTY: Stats = {
   played: 0,
@@ -19,6 +33,7 @@ const EMPTY: Stats = {
   currentStreak: 0,
   bestStreak: 0,
   history: [],
+  plays: [],
 };
 
 function load(): Stats {
@@ -31,12 +46,23 @@ function load(): Stats {
   }
 }
 
+function persist(s: Stats) {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(s));
+  } catch {
+    /* ignore quota / privacy mode */
+  }
+}
+
 export function useStats() {
   const [stats, setStats] = useState<Stats>(load);
 
+  // Score a guess (win/miss). Skipped rounds don't call this, so they never
+  // break a streak.
   const record = useCallback((correct: boolean) => {
     setStats((prev) => {
       const next: Stats = {
+        ...prev,
         played: prev.played + 1,
         correct: prev.correct + (correct ? 1 : 0),
         currentStreak: correct ? prev.currentStreak + 1 : 0,
@@ -45,14 +71,23 @@ export function useStats() {
           : prev.bestStreak,
         history: [...prev.history, correct ? 1 : 0].slice(-50),
       };
-      try {
-        localStorage.setItem(KEY, JSON.stringify(next));
-      } catch {
-        /* ignore quota / privacy mode */
-      }
+      persist(next);
       return next;
     });
   }, []);
 
-  return { stats, record };
+  // Append a round to the "recently played" history (every round, including
+  // ones the player didn't guess).
+  const logPlay = useCallback((play: Omit<Play, "at">) => {
+    setStats((prev) => {
+      const next: Stats = {
+        ...prev,
+        plays: [...prev.plays, { ...play, at: Date.now() }].slice(-MAX_PLAYS),
+      };
+      persist(next);
+      return next;
+    });
+  }, []);
+
+  return { stats, record, logPlay };
 }

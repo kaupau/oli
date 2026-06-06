@@ -109,6 +109,45 @@ button:disabled {
   gap: 8px;
   z-index: 1;
 }
+/* Stats button tucked into the right of the title bar so the player below can
+   run full width. */
+.titlebar-btn {
+  position: relative;
+  z-index: 1;
+  margin-left: auto;
+  padding: 2px 11px;
+  border-radius: 999px;
+  border: 1px solid #9aa1ac;
+  background: linear-gradient(to bottom, #ffffff, #e8eaee);
+  box-shadow: inset 0 1px 0 #fff, 0 1px 1px rgba(0, 0, 0, 0.12);
+  color: #2b2f36;
+  font-size: 11.5px;
+  font-weight: 600;
+  transition: filter 0.12s;
+}
+.titlebar-btn:hover {
+  filter: brightness(1.03);
+}
+.titlebar-btn:active {
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.22);
+}
+
+/* Mute toggle lives inside the player's progress row as a small speaker icon. */
+.mute-btn {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #5b6675;
+  transition: color 0.12s, background 0.12s;
+}
+.mute-btn:hover {
+  color: #1f2329;
+  background: rgba(0, 0, 0, 0.06);
+}
 .dot {
   position: relative;
   width: 12px;
@@ -306,6 +345,151 @@ button:disabled {
 }
 .tnum {
   font-variant-numeric: tabular-nums;
+}
+
+/* ---- streak chip (status bar) ---- */
+.streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+  color: #b4540a;
+  background: linear-gradient(to bottom, #ffe6b8, #ffcf86);
+  border: 1px solid #f0ab53;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  animation: streak-pop 0.32s ease-out;
+}
+.streak .flame {
+  font-size: 12px;
+  line-height: 1;
+  animation: flame-flicker 1.1s ease-in-out infinite;
+}
+.streak-hot {
+  color: #d2451e;
+  font-weight: 700;
+}
+@keyframes streak-pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes flame-flicker {
+  0%, 100% {
+    transform: rotate(-3deg) scale(1);
+  }
+  50% {
+    transform: rotate(3deg) scale(1.12);
+  }
+}
+
+/* ---- recently played list (stats modal) ---- */
+.recent-list {
+  max-height: 168px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fff;
+}
+.recent-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 10px;
+  border-bottom: 1px solid #eef1f6;
+  font-size: 12px;
+}
+.recent-row:last-child {
+  border-bottom: none;
+}
+.recent-mark {
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+}
+.recent-mark.win {
+  background: #2f6fe0;
+}
+.recent-mark.miss {
+  background: var(--bad);
+}
+.recent-mark.skip {
+  background: #c2c8d2;
+}
+.recent-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 500;
+}
+.recent-artist {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 34%;
+  text-align: right;
+}
+
+/* ---- streaming service links ---- */
+/* Reserve the row's height even before reveal so the player doesn't grow when
+   the "Add to …" buttons appear. */
+.svc-row {
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+}
+.svc {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.svc-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid #c9ced8;
+  background: #fff;
+  color: #1f2329;
+  transition: filter 0.12s, transform 0.12s;
+}
+.svc-link:hover {
+  filter: brightness(0.97);
+  transform: translateY(-0.5px);
+}
+.svc-link.svc-apple {
+  color: #fa2d48;
+}
+.svc-link.svc-spotify {
+  color: #1db954;
+}
+/* compact = icon-only pills for dense list rows */
+.svc-compact {
+  flex-shrink: 0;
+}
+.svc-compact .svc-link {
+  padding: 3px;
+  width: 22px;
+  height: 22px;
+  justify-content: center;
+  border-radius: 6px;
 }
 
 /* ---- overlay ---- */

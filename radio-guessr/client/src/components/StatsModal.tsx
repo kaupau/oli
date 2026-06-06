@@ -1,4 +1,9 @@
-import type { Stats } from "../lib/stats";
+import type { PlayResult, Stats } from "../lib/stats";
+import { ServiceLinks } from "./ServiceLinks";
+
+function label(r: PlayResult) {
+  return r === "win" ? "Correct" : r === "miss" ? "Missed" : "Didn't guess";
+}
 
 export function StatsModal({
   stats,
@@ -9,6 +14,7 @@ export function StatsModal({
 }) {
   const accuracy = stats.played > 0 ? Math.round((stats.correct / stats.played) * 100) : 0;
   const last = stats.history.slice(-40);
+  const recent = [...stats.plays].reverse(); // most recent first
 
   return (
     <div className="overlay" onClick={onClose}>
@@ -46,8 +52,25 @@ export function StatsModal({
             </div>
           )}
 
-          <div className="mt-6 flex items-center justify-between">
-            <span className="faint text-[11px]">Saved on this device only.</span>
+          {recent.length > 0 && (
+            <div className="mt-5">
+              <div className="soft mb-2 text-[11px]">Recently played</div>
+              <div className="recent-list">
+                {recent.slice(0, 40).map((p, i) => (
+                  <div key={i} className="recent-row">
+                    <span className={`recent-mark ${p.result}`} title={label(p.result)}>
+                      {p.result === "win" ? "✓" : p.result === "miss" ? "✗" : "–"}
+                    </span>
+                    <span className="recent-title truncate">{p.title}</span>
+                    <span className="recent-artist soft truncate">{p.artist}</span>
+                    <ServiceLinks title={p.title} artist={p.artist} compact />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="mt-6 flex items-center justify-end">
             <button onClick={onClose} className="aqua-btn aqua-btn-blue px-6 py-1.5">
               OK
             </button>

@@ -7,13 +7,14 @@ import { StatsModal } from "./components/StatsModal";
 import { Disc } from "./components/Disc";
 import { Cover } from "./components/Cover";
 import { Visualizer } from "./components/Visualizer";
+import { ServiceLinks } from "./components/ServiceLinks";
 import { burstConfetti } from "./lib/confetti";
 
 type Phase = "preroll" | "listen" | "reveal";
 
 export default function App() {
   const radio = useRadio();
-  const { stats, record } = useStats();
+  const { stats, record, logPlay } = useStats();
   const [muted, setMuted] = useState(false);
   const { armed, arm, getAnalyser } = useSyncedAudio(
     radio.current,
@@ -25,6 +26,8 @@ export default function App() {
   const [showStats, setShowStats] = useState(false);
   const [myChoice, setMyChoice] = useState<{ roundId: string; choiceId: string } | null>(null);
   const scoredRef = useRef<string | null>(null);
+  const loggedRef = useRef<string | null>(null);
+  const milestoneRef = useRef(0);
 
   // Re-render at ~10fps to drive the countdown smoothly.
   const [, setTick] = useState(0);
@@ -86,6 +89,33 @@ export default function App() {
     if (ack.correct) burstConfetti();
   }, [radio.lastAck, record]);
 
+  // Log every round to "recently played" at reveal — including ones we didn't
+  // guess — capturing the actual track so players can browse what they've seen.
+  useEffect(() => {
+    if (!reveal || !current || reveal.roundId !== current.id) return;
+    if (loggedRef.current === reveal.roundId) return;
+    const answer = current.choices.find((c) => c.id === reveal.correctChoiceId);
+    if (!answer) return;
+    loggedRef.current = reveal.roundId;
+    const guessedThis = myChoice?.roundId === reveal.roundId;
+    const result = guessedThis
+      ? myChoice!.choiceId === reveal.correctChoiceId
+        ? "win"
+        : "miss"
+      : "skip";
+    logPlay({ title: answer.title, artist: answer.artist, result });
+  }, [reveal, current, myChoice, logPlay]);
+
+  // Extra celebration when the streak crosses a milestone (every 5 in a row).
+  useEffect(() => {
+    const s = stats.currentStreak;
+    if (s > milestoneRef.current && s > 0 && s % 5 === 0) {
+      burstConfetti();
+      setTimeout(burstConfetti, 180);
+    }
+    milestoneRef.current = s;
+  }, [stats.currentStreak]);
+
   const pick = (choiceId: string) => {
     if (!current || phase !== "listen" || myChoiceId) return;
     setMyChoice({ roundId: current.id, choiceId });
@@ -115,6 +145,9 @@ export default function App() {
             <Disc size={14} />
             Mixtape
           </div>
+          <button className="titlebar-btn" onClick={() => setShowStats(true)}>
+            Stats
+          </button>
         </div>
 
         <div className="px-4 pt-4 pb-3">
@@ -132,7 +165,6 @@ export default function App() {
             guessed={myChoiceId !== null}
             muted={muted}
             onToggleMute={() => setMuted((m) => !m)}
-            onShowStats={() => setShowStats(true)}
           />
 
           <div className="mt-3.5">
@@ -159,7 +191,17 @@ export default function App() {
             />
             {radio.status === "open" ? "Live" : "Off air"} · {radio.listeners} listening
           </span>
-          <span>Round {current ? current.index + 1 : "—"}</span>
+          {stats.currentStreak > 0 && (
+            <span
+              key={stats.currentStreak}
+              className="streak"
+              title={`${stats.currentStreak} correct in a row`}
+            >
+              <span className="flame">🔥</span>
+              <span className="tnum">{stats.currentStreak}</span>
+              {stats.currentStreak >= 3 && <span className="streak-hot"> on fire!</span>}
+            </span>
+          )}
         </div>
       </div>
 
@@ -190,7 +232,6 @@ function PlayerStrip({
   guessed,
   muted,
   onToggleMute,
-  onShowStats,
 }: {
   phase: Phase;
   progress: number;
@@ -205,7 +246,6 @@ function PlayerStrip({
   guessed: boolean;
   muted: boolean;
   onToggleMute: () => void;
-  onShowStats: () => void;
 }) {
   const pct = Math.min(100, Math.max(0, progress * 100));
   const elapsed = Math.min(totalSec, Math.max(0, progress * totalSec));
@@ -253,18 +293,53 @@ function PlayerStrip({
           >
             −{fmt(secondsLeft)}
           </span>
+          <button
+            className="mute-btn shrink-0"
+            onClick={onToggleMute}
+            title={muted ? "Unmute" : "Mute"}
+            aria-label={muted ? "Unmute" : "Mute"}
+          >
+            <SpeakerIcon muted={muted} />
+          </button>
+        </div>
+        <div className="svc-row mt-1.5">
+          {phase === "reveal" && title && (
+            <div className="fade-up">
+              <ServiceLinks title={title} artist={artist ?? ""} />
+            </div>
+          )}
         </div>
       </div>
-
-      <div className="flex w-[76px] shrink-0 flex-col gap-1.5">
-        <button className="aqua-btn" onClick={onShowStats}>
-          Stats
-        </button>
-        <button className="aqua-btn" onClick={onToggleMute}>
-          {muted ? "Unmute" : "Sound"}
-        </button>
-      </div>
     </div>
+  );
+}
+
+function SpeakerIcon({ muted }: { muted: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" aria-hidden="true">
+      <path
+        d="M4 9v6h4l5 4V5L8 9H4z"
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      {muted ? (
+        <path
+          d="M17 9l4 6M21 9l-4 6"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        />
+      ) : (
+        <path
+          d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+        />
+      )}
+    </svg>
   );
 }
 
